@@ -32,7 +32,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    fetchTree();
+    void fetchTree();
   }, []);
 
   const fetchTree = async () => {
@@ -65,16 +65,10 @@ export const FolderTree: React.FC<FolderTreeProps> = ({
 
     return (
       <div key={node.id} className="select-none text-sm">
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           onClick={() => toggleExpand(node.id)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              toggleExpand(node.id);
-            }
-          }}
-          className={`flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-800 ${
+          className={`w-full text-left flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-800 ${
             level > 0 ? 'ml-4' : ''
           }`}
         >
@@ -83,7 +77,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({
           </span>
           <span className="text-base">{node.isSystem ? '📥' : '📁'}</span>
           <span className="font-medium truncate flex-1">{node.name}</span>
-        </div>
+        </button>
 
         {isExpanded && hasChildren && (
           <div className="pl-2 border-l border-neutral-200 dark:border-neutral-700 ml-3">

@@ -25,7 +25,7 @@ export const BacklinksPanel: React.FC<BacklinksPanelProps> = ({ noteId, onNaviga
 
   useEffect(() => {
     if (noteId) {
-      fetchBacklinks(noteId);
+      void fetchBacklinks(noteId);
     }
   }, [noteId]);
 
@@ -62,17 +62,11 @@ export const BacklinksPanel: React.FC<BacklinksPanelProps> = ({ noteId, onNaviga
       ) : (
         <div className="space-y-2">
           {backlinks.map((link) => (
-            <div
+            <button
               key={link.id}
-              role="button"
-              tabIndex={0}
+              type="button"
               onClick={() => onNavigateNote && onNavigateNote(link.sourceNoteId)}
-              onKeyDown={(e) => {
-                if ((e.key === 'Enter' || e.key === ' ') && onNavigateNote) {
-                  onNavigateNote(link.sourceNoteId);
-                }
-              }}
-              className="p-2.5 rounded bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-blue-500 cursor-pointer transition-all"
+              className="w-full text-left p-2.5 rounded bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-blue-500 cursor-pointer transition-all"
             >
               <div className="font-medium text-blue-600 dark:text-blue-400 mb-1 hover:underline">
                 📄 {link.sourceTitle}
@@ -82,7 +76,7 @@ export const BacklinksPanel: React.FC<BacklinksPanelProps> = ({ noteId, onNaviga
                   "...{link.contextSnippet}..."
                 </div>
               )}
-            </div>
+            </button>
           ))}
         </div>
       )}

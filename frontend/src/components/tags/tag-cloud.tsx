@@ -22,7 +22,7 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTags();
+    void fetchTags();
   }, []);
 
   const fetchTags = async () => {
@@ -57,8 +57,9 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
           tags.map((tag) => {
             const isSelected = selectedTag === tag.name;
             return (
-              <span
+              <button
                 key={tag.id}
+                type="button"
                 onClick={() => handleTagClick(tag.name)}
                 className={`text-xs px-2 py-0.5 rounded-full cursor-pointer transition-all ${
                   isSelected
@@ -67,7 +68,7 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
                 }`}
               >
                 #{tag.name} <span className="opacity-60 text-[10px]">({tag.count})</span>
-              </span>
+              </button>
             );
           })
         )}

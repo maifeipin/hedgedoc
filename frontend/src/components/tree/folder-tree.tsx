@@ -27,6 +27,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ _activeNoteId, _onSelect
   const [loading, setLoading] = useState<boolean>(true)
   const [newFolderName, setNewFolderName] = useState<string>('')
   const [showAddForm, setShowAddForm] = useState<boolean>(false)
+  const [draggedOverId, setDraggedOverId] = useState<number | null>(null)
 
   useEffect(() => {
     void fetchTree()
@@ -81,20 +82,61 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ _activeNoteId, _onSelect
       const res = await fetch(`/api/v2/folders/${id}`, { method: 'DELETE' })
       if (res.ok) {
         await fetchTree()
+      } else {
+        const errorData = await res.json()
+        alert(errorData.message || '删除失败，请确保目录下无子文件夹或笔记')
       }
     } catch (err) {
       console.error('Failed to delete folder', err)
+      alert('删除失败，请检查网络连接')
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent, folderId: number) => {
+    e.preventDefault()
+    setDraggedOverId(folderId)
+  }
+
+  const handleDragLeave = () => {
+    setDraggedOverId(null)
+  }
+
+  const handleDrop = async (e: React.DragEvent, targetFolderId: number) => {
+    e.preventDefault()
+    setDraggedOverId(null)
+    const noteIdStr = e.dataTransfer.getData('text/plain')
+    const noteId = parseInt(noteIdStr, 10)
+    if (!noteId) return
+
+    try {
+      const res = await fetch('/api/v2/folders/move-note', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ noteId, folderId: targetFolderId })
+      })
+      if (res.ok) {
+        alert('笔记成功移动至新目录！')
+        await fetchTree()
+      }
+    } catch (err) {
+      console.error('Failed to move note to folder', err)
     }
   }
 
   const renderNode = (node: FolderNode, level: number = 0) => {
     const isExpanded = !!expanded[node.id]
     const hasChildren = node.children && node.children.length > 0
+    const isOver = draggedOverId === node.id
 
     return (
       <div key={node.id} className='select-none text-sm'>
         <div
-          className={`w-full flex items-center justify-between py-1 px-2 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 ${level > 0 ? 'ml-3' : ''}`}>
+          onDragOver={(e) => handleDragOver(e, node.id)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, node.id)}
+          className={`w-full flex items-center justify-between py-1 px-2 rounded transition-all ${
+            isOver ? 'bg-primary-subtle ring-2 ring-primary' : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'
+          } ${level > 0 ? 'ml-3' : ''}`}>
           <button
             type='button'
             onClick={() => toggleExpand(node.id)}
@@ -102,7 +144,6 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ _activeNoteId, _onSelect
             <span className='w-4 text-center text-xs text-neutral-400'>
               {hasChildren ? (isExpanded ? '▼' : '▶') : '•'}
             </span>
-            <span className='text-base'>{node.isSystem ? '📥' : '📁'}</span>
             <span className='font-medium truncate'>{node.name}</span>
           </button>
 
@@ -110,7 +151,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ _activeNoteId, _onSelect
             <button
               type='button'
               onClick={() => handleDeleteFolder(node.id)}
-              className='text-xs text-neutral-400 hover:text-red-500 opacity-60 hover:opacity-100 p-0.5 bg-transparent border-0'
+              className='text-xs text-neutral-400 hover:text-red-500 opacity-60 hover:opacity-100 p-0.5 bg-transparent border-0 ms-1'
               title='删除目录'>
               ✕
             </button>

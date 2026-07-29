@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 import { FieldNameFolder, Folder, TableFolder } from '@hedgedoc/database';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
 import { InjectConnection } from 'nest-knexjs';
 
@@ -121,6 +121,22 @@ export class FoldersService {
   }
 
   async deleteFolder(id: number, userId: number): Promise<void> {
+    // 校验 1: 是否有下级子文件夹
+    const subFolder = await this.knex(TableFolder).where({ parentId: id, ownerId: userId }).first();
+    if (subFolder) {
+      throw new BadRequestException('该目录包含子文件夹，请先清空子文件夹后再删除');
+    }
+
+    // 校验 2: 是否包含 MD 笔记
+    const noteInside = await this.knex('note').where({ folder_id: id, owner_id: userId }).first();
+    if (noteInside) {
+      throw new BadRequestException('该目录包含 Markdown 笔记，请先移走或删除笔记后再删除');
+    }
+
     await this.knex(TableFolder).where({ id, ownerId: userId }).del();
+  }
+
+  async moveNoteToFolder(noteId: number, folderId: number, userId: number): Promise<void> {
+    await this.knex('note').where({ id: noteId, owner_id: userId }).update({ folder_id: folderId });
   }
 }

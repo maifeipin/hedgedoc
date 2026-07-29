@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 
 import { TagsService } from './tags.service';
 
@@ -14,6 +14,17 @@ export class TagsController {
   @Get()
   async getAllTags() {
     return await this.tagsService.getAllTagsWithCount();
+  }
+
+  @Post()
+  async createTag(@Body('name') name: string, @Body('color') color?: string) {
+    return await this.tagsService.createTag(name, color);
+  }
+
+  @Delete(':id')
+  async deleteTag(@Param('id', ParseIntPipe) id: number) {
+    await this.tagsService.deleteTag(id);
+    return { success: true };
   }
 
   @Post('note/:noteId')

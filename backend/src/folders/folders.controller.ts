@@ -37,6 +37,17 @@ export class FoldersController {
     return await this.foldersService.createFolder(name, userId, parentId);
   }
 
+  @Post('move-note')
+  async moveNote(
+    @Request() req: any,
+    @Body('noteId', ParseIntPipe) noteId: number,
+    @Body('folderId', ParseIntPipe) folderId: number,
+  ) {
+    const userId = req.user?.id || 1;
+    await this.foldersService.moveNoteToFolder(noteId, folderId, userId);
+    return { success: true };
+  }
+
   @Put(':id')
   async updateFolder(
     @Request() req: any,

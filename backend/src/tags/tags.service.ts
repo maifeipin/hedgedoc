@@ -56,6 +56,33 @@ export class TagsService {
   }
 
   /**
+   * 创建独立标签
+   */
+  async createTag(name: string, color?: string): Promise<TagWithCount> {
+    const cleanName = name.trim().toLowerCase();
+    const existing = await this.knex(TableTag).where(FieldNameTag.name, cleanName).first();
+    if (existing) {
+      return { ...existing, count: 0 };
+    }
+
+    const [inserted] = await this.knex(TableTag).insert(
+      {
+        [FieldNameTag.name]: cleanName,
+        color: color || '#3b82f6',
+      },
+      ['*'],
+    );
+    return { ...inserted, count: 0 };
+  }
+
+  /**
+   * 删除指定标签及映射关系
+   */
+  async deleteTag(id: number): Promise<void> {
+    await this.knex(TableTag).where('id', id).del();
+  }
+
+  /**
    * 为笔记增量设置标签 (解析 #tag 或 yaml 标签后刷入)
    */
   async setNoteTags(noteId: number, tagNames: string[]): Promise<void> {

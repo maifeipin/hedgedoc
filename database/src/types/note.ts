@@ -31,11 +31,11 @@ export interface Note {
 
 export enum FieldNameNote {
   id = 'id',
-  ownerId = 'ownerId',
+  ownerId = 'owner_id',
   version = 'version',
-  createdAt = 'createdAt',
-  publiclyVisible = 'publiclyVisible',
-  folderId = 'folderId',
+  createdAt = 'created_at',
+  publiclyVisible = 'publicly_visible',
+  folderId = 'folder_id',
 }
 
 export const TableNote = 'note'

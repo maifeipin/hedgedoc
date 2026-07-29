@@ -21,7 +21,7 @@ export class FoldersService {
   ) {}
 
   /**
-   * 确保用户拥有默认系统 Inbox 文件夹
+   * 确保用户拥有默认系统 Inbox 及基础根目录文件夹
    */
   async ensureUserInboxFolder(userId: number): Promise<Folder> {
     const existing = await this.knex(TableFolder)
@@ -32,22 +32,40 @@ export class FoldersService {
       })
       .first();
 
-    if (existing) {
-      return existing;
+    if (!existing) {
+      const defaultFolders = [
+        { name: 'Inbox', isSystem: true, sortOrder: 0 },
+        { name: '📁 个人笔记', isSystem: false, sortOrder: 1 },
+        { name: '📁 工作项目', isSystem: false, sortOrder: 2 },
+        { name: '📁 知识库', isSystem: false, sortOrder: 3 },
+        { name: '📁 归档', isSystem: false, sortOrder: 4 },
+      ];
+
+      for (const df of defaultFolders) {
+        const existFold = await this.knex(TableFolder)
+          .where({
+            [FieldNameFolder.ownerId]: userId,
+            [FieldNameFolder.name]: df.name,
+          })
+          .first();
+        if (!existFold) {
+          await this.knex(TableFolder).insert({
+            [FieldNameFolder.name]: df.name,
+            [FieldNameFolder.ownerId]: userId,
+            [FieldNameFolder.isSystem]: df.isSystem,
+            [FieldNameFolder.sortOrder]: df.sortOrder,
+          });
+        }
+      }
     }
 
-    const [createdId] = await this.knex(TableFolder).insert(
-      {
-        [FieldNameFolder.name]: 'Inbox',
+    return await this.knex(TableFolder)
+      .where({
         [FieldNameFolder.ownerId]: userId,
         [FieldNameFolder.isSystem]: true,
-        [FieldNameFolder.sortOrder]: 0,
-      },
-      [FieldNameFolder.id],
-    );
-
-    const folderId = typeof createdId === 'object' ? createdId.id : createdId;
-    return await this.knex(TableFolder).where({ id: folderId }).first();
+        [FieldNameFolder.name]: 'Inbox',
+      })
+      .first();
   }
 
   /**

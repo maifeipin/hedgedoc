@@ -20,6 +20,8 @@ interface TagCloudProps {
 export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
   const [tags, setTags] = useState<TagItem[]>([])
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [newTagName, setNewTagName] = useState<string>('')
+  const [showTagForm, setShowTagForm] = useState<boolean>(false)
 
   useEffect(() => {
     void fetchTags()
@@ -45,10 +47,54 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
     }
   }
 
+  const handleCreateTag = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTagName.trim()) return
+    try {
+      const res = await fetch('/api/v2/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newTagName.trim() })
+      })
+      if (res.ok) {
+        setNewTagName('')
+        setShowTagForm(false)
+        await fetchTags()
+      }
+    } catch (err) {
+      console.error('Failed to create tag', err)
+    }
+  }
+
   return (
-    <div className='p-3 border-t border-neutral-200 dark:border-neutral-800'>
-      <h3 className='text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2'>🏷️ 标签分类</h3>
-      <div className='flex flex-wrap gap-1.5 max-h-36 overflow-y-auto'>
+    <div className='p-3 bg-neutral-50 dark:bg-neutral-900 rounded'>
+      <div className='flex items-center justify-between pb-2 mb-2 border-b border-neutral-200 dark:border-neutral-800'>
+        <h3 className='font-bold text-neutral-700 dark:text-neutral-200 text-sm tracking-wide m-0'>🏷️ 标签分类</h3>
+        <button
+          type='button'
+          onClick={() => setShowTagForm(!showTagForm)}
+          className='btn btn-sm btn-outline-secondary py-0 px-2 text-xs'>
+          + 标签
+        </button>
+      </div>
+
+      {showTagForm && (
+        <form onSubmit={handleCreateTag} className='mb-3 flex gap-1'>
+          <input
+            type='text'
+            value={newTagName}
+            onChange={(e) => setNewTagName(e.target.value)}
+            placeholder='标签名称...'
+            className='form-control form-control-sm text-xs'
+            autoFocus
+          />
+          <button type='submit' className='btn btn-sm btn-success text-xs px-2'>
+            添加
+          </button>
+        </form>
+      )}
+
+      <div className='flex flex-wrap gap-1.5 max-h-48 overflow-y-auto'>
         {tags.length === 0 ? (
           <span className='text-xs text-neutral-400'>暂无标签</span>
         ) : (
@@ -59,12 +105,13 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
                 key={tag.id}
                 type='button'
                 onClick={() => handleTagClick(tag.name)}
-                className={`text-xs px-2 py-0.5 rounded-full cursor-pointer transition-all ${
+                style={{ backgroundColor: tag.color || undefined }}
+                className={`badge border-0 rounded-pill px-2.5 py-1 text-xs cursor-pointer transition-all ${
                   isSelected
-                    ? 'bg-blue-600 text-white font-medium shadow-sm'
-                    : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700'
+                    ? 'bg-primary text-white shadow-sm ring-2 ring-primary ring-offset-1'
+                    : 'bg-secondary-subtle text-secondary-emphasis hover:bg-secondary'
                 }`}>
-                #{tag.name} <span className='opacity-60 text-[10px]'>({tag.count})</span>
+                #{tag.name} {tag.count > 0 && <span className='opacity-75 ms-1'>({tag.count})</span>}
               </button>
             )
           })

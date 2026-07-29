@@ -26,6 +26,21 @@ export class TagsService {
    * 获取所有标签及包含的笔记数量
    */
   async getAllTagsWithCount(): Promise<TagWithCount[]> {
+    const totalCount = await this.knex(TableTag).count<{ count: string }>('id as count').first();
+    if (!totalCount || parseInt(totalCount.count, 10) === 0) {
+      const presetTags = [
+        { name: '重要', color: '#ef4444' },
+        { name: '待办', color: '#f59e0b' },
+        { name: '工作', color: '#3b82f6' },
+        { name: '学习', color: '#10b981' },
+        { name: '随笔', color: '#8b5cf6' },
+        { name: '项目', color: '#ec4899' },
+      ];
+      for (const pt of presetTags) {
+        await this.knex(TableTag).insert(pt).onConflict('name').ignore();
+      }
+    }
+
     const rows = await this.knex(TableTag)
       .select(
         `${TableTag}.id`,

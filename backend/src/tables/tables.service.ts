@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
-import { TableTable, TableTableColumn, TableTableRecord, FieldNameTable, FieldNameTableColumn, FieldNameTableRecord } from '@hedgedoc/database';
+import { TableTable, TableTableColumn, TableTableRecord, FieldNameTable } from '@hedgedoc/database';
 
 @Injectable()
 export class TablesService {

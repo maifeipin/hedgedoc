@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
-import { TableNoteLink, FieldNameNoteLink, TableAlias } from '@hedgedoc/database';
+import { TableNoteLink, FieldNameNoteLink, TableAlias, FieldNameAlias } from '@hedgedoc/database';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NoteEvent } from '../events';
 
@@ -64,11 +64,11 @@ export class LinksService {
       for (const item of extracted) {
         // 查别名或标题匹配
         const targetAlias = await trx(TableAlias)
-          .select('noteId')
-          .where('alias', item.title)
+          .select(FieldNameAlias.noteId)
+          .where(FieldNameAlias.alias, item.title)
           .first();
 
-        let targetNoteId: number | null = targetAlias ? targetAlias.noteId : null;
+        let targetNoteId: number | null = targetAlias ? targetAlias[FieldNameAlias.noteId] : null;
 
         await trx(TableNoteLink).insert({
           [FieldNameNoteLink.sourceNoteId]: sourceNoteId,
@@ -93,10 +93,13 @@ export class LinksService {
     }
 
     // 从 DB 深度补全该 Note 的所有已知别名与 ID 字符串，防范事件参数缺失
-    const aliases = await this.knex(TableAlias).select('alias').where({ noteId });
+    const aliases = await this.knex(TableAlias)
+      .select(FieldNameAlias.alias)
+      .where(FieldNameAlias.noteId, noteId);
+
     aliases.forEach((a) => {
-      if (a.alias && !titlesToMatch.includes(a.alias)) {
-        titlesToMatch.push(a.alias);
+      if (a[FieldNameAlias.alias] && !titlesToMatch.includes(a[FieldNameAlias.alias])) {
+        titlesToMatch.push(a[FieldNameAlias.alias]);
       }
     });
 
@@ -126,7 +129,7 @@ export class LinksService {
         `${TableNoteLink}.createdAt`,
         `${TableAlias}.alias as sourceTitle`,
       )
-      .leftJoin(TableAlias, `${TableAlias}.noteId`, `${TableNoteLink}.sourceNoteId`)
+      .leftJoin(TableAlias, `${TableAlias}.${FieldNameAlias.noteId}`, `${TableNoteLink}.sourceNoteId`)
       .where(`${TableNoteLink}.targetNoteId`, noteId);
 
     return rows.map((r) => ({

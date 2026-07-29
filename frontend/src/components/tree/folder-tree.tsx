@@ -15,16 +15,16 @@ export interface FolderNode {
 }
 
 interface FolderTreeProps {
-  activeNoteId?: number;
-  onSelectNote?: (noteId: number) => void;
-  onSelectTable?: (tableId: number) => void;
+  _activeNoteId?: number;
+  _onSelectNote?: (noteId: number) => void;
+  _onSelectTable?: (tableId: number) => void;
   onImportMD?: () => void;
 }
 
 export const FolderTree: React.FC<FolderTreeProps> = ({
-  activeNoteId,
-  onSelectNote,
-  onSelectTable,
+  _activeNoteId,
+  _onSelectNote,
+  _onSelectTable,
   onImportMD,
 }) => {
   const [treeData, setTreeData] = useState<FolderNode[]>([]);
@@ -42,7 +42,6 @@ export const FolderTree: React.FC<FolderTreeProps> = ({
       if (res.ok) {
         const data = await res.json();
         setTreeData(data);
-        // 默认展开首层
         const initialExpand: Record<number, boolean> = {};
         data.forEach((item: FolderNode) => {
           initialExpand[item.id] = true;
@@ -67,7 +66,14 @@ export const FolderTree: React.FC<FolderTreeProps> = ({
     return (
       <div key={node.id} className="select-none text-sm">
         <div
+          role="button"
+          tabIndex={0}
           onClick={() => toggleExpand(node.id)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              toggleExpand(node.id);
+            }
+          }}
           className={`flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-800 ${
             level > 0 ? 'ml-4' : ''
           }`}
@@ -90,12 +96,12 @@ export const FolderTree: React.FC<FolderTreeProps> = ({
 
   return (
     <div className="w-full h-full flex flex-col bg-neutral-50 dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 p-3">
-      {/* 头部操作条 */}
       <div className="flex items-center justify-between pb-3 mb-2 border-b border-neutral-200 dark:border-neutral-800">
         <h2 className="font-bold text-neutral-700 dark:text-neutral-200 text-sm tracking-wide">
           📖 个人工作台
         </h2>
         <button
+          type="button"
           onClick={onImportMD}
           className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition-all shadow-sm active:scale-95"
           title="导入 Markdown 文件"
@@ -104,7 +110,6 @@ export const FolderTree: React.FC<FolderTreeProps> = ({
         </button>
       </div>
 
-      {/* 树状目录结构 */}
       <div className="flex-1 overflow-y-auto space-y-1">
         {loading ? (
           <div className="text-xs text-neutral-400 p-2">加载目录中...</div>

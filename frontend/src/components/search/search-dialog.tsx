@@ -4,17 +4,23 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 'use me';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface SearchDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectResult: (noteId: number) => void;
+  _onSelectResult?: (noteId: number) => void;
 }
 
-export const SearchDialog: React.FC<SearchDialogProps> = ({ isOpen, onClose, onSelectResult }) => {
+export const SearchDialog: React.FC<SearchDialogProps> = ({ isOpen, onClose, _onSelectResult }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,14 +42,15 @@ export const SearchDialog: React.FC<SearchDialogProps> = ({ isOpen, onClose, onS
         <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2">
           <span className="text-neutral-400">🔍</span>
           <input
+            ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索全文或输入 Cmd + K..."
             className="w-full bg-transparent outline-none text-sm text-neutral-800 dark:text-neutral-100 placeholder-neutral-400"
-            autoFocus
           />
           <button
+            type="button"
             onClick={onClose}
             className="text-xs px-2 py-1 text-neutral-400 hover:text-neutral-600 rounded"
           >

@@ -64,7 +64,14 @@ export const BacklinksPanel: React.FC<BacklinksPanelProps> = ({ noteId, onNaviga
           {backlinks.map((link) => (
             <div
               key={link.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onNavigateNote && onNavigateNote(link.sourceNoteId)}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && onNavigateNote) {
+                  onNavigateNote(link.sourceNoteId);
+                }
+              }}
               className="p-2.5 rounded bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-blue-500 cursor-pointer transition-all"
             >
               <div className="font-medium text-blue-600 dark:text-blue-400 mb-1 hover:underline">

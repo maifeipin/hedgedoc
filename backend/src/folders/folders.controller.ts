@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Request } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Request } from '@nestjs/common'
 
-import { FoldersService } from './folders.service';
+import { FoldersService } from './folders.service'
 
 @Controller('api/v2/folders')
 export class FoldersController {
@@ -13,8 +13,8 @@ export class FoldersController {
 
   @Get('tree')
   async getTree(@Request() req: any) {
-    const userId = req.user?.id || 1;
-    return await this.foldersService.getUserFolderTree(userId);
+    const userId = req.user?.id || 1
+    return await this.foldersService.getUserFolderTree(userId)
   }
 
   @Post()
@@ -23,8 +23,8 @@ export class FoldersController {
     @Body('name') name: string,
     @Body('parentId') parentId?: number,
   ) {
-    const userId = req.user?.id || 1;
-    return await this.foldersService.createFolder(name, userId, parentId);
+    const userId = req.user?.id || 1
+    return await this.foldersService.createFolder(name, userId, parentId)
   }
 
   @Put(':id')
@@ -33,14 +33,14 @@ export class FoldersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updates: any,
   ) {
-    const userId = req.user?.id || 1;
-    return await this.foldersService.updateFolder(id, userId, updates);
+    const userId = req.user?.id || 1
+    return await this.foldersService.updateFolder(id, userId, updates)
   }
 
   @Delete(':id')
   async deleteFolder(@Request() req: any, @Param('id', ParseIntPipe) id: number) {
-    const userId = req.user?.id || 1;
-    await this.foldersService.deleteFolder(id, userId);
-    return { success: true };
+    const userId = req.user?.id || 1
+    await this.foldersService.deleteFolder(id, userId)
+    return { success: true }
   }
 }

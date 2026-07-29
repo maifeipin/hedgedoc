@@ -9,10 +9,10 @@ import {
   TableTable,
   TableTableColumn,
   TableTableRecord,
-} from '@hedgedoc/database';
-import { Injectable } from '@nestjs/common';
-import { Knex } from 'knex';
-import { InjectConnection } from 'nest-knexjs';
+} from '@hedgedoc/database'
+import { Injectable } from '@nestjs/common'
+import { Knex } from 'knex'
+import { InjectConnection } from 'nest-knexjs'
 
 @Injectable()
 export class TablesService {
@@ -29,24 +29,24 @@ export class TablesService {
         [FieldNameTable.folderId]: folderId || null,
       },
       ['*'],
-    );
-    return inserted;
+    )
+    return inserted
   }
 
   async getTableDetails(tableId: number) {
-    const tableInfo = await this.knex(TableTable).where({ id: tableId }).first();
+    const tableInfo = await this.knex(TableTable).where({ id: tableId }).first()
     const columns = await this.knex(TableTableColumn)
       .where({ tableId })
-      .orderBy(FieldNameTableColumn.sortOrder, 'asc');
+      .orderBy(FieldNameTableColumn.sortOrder, 'asc')
     const records = await this.knex(TableTableRecord)
       .where({ tableId })
-      .orderBy('createdAt', 'asc');
+      .orderBy('createdAt', 'asc')
 
     return {
       table: tableInfo,
       columns,
       records,
-    };
+    }
   }
 
   async addColumn(tableId: number, name: string, type: string, options?: any) {
@@ -58,8 +58,8 @@ export class TablesService {
         options: options ? JSON.stringify(options) : null,
       },
       ['*'],
-    );
-    return col;
+    )
+    return col
   }
 
   async createRecord(tableId: number, data: Record<string, any>, noteId?: number) {
@@ -70,8 +70,8 @@ export class TablesService {
         noteId: noteId || null,
       },
       ['*'],
-    );
-    return rec;
+    )
+    return rec
   }
 
   async updateRecordCell(recordId: string, columnId: string, value: any) {
@@ -79,7 +79,7 @@ export class TablesService {
     await this.knex.raw(
       `UPDATE table_records SET data = jsonb_set(data, ARRAY[?], ?::jsonb), "updatedAt" = NOW() WHERE id = ?`,
       [columnId, JSON.stringify(value), recordId],
-    );
-    return await this.knex(TableTableRecord).where({ id: recordId }).first();
+    )
+    return await this.knex(TableTableRecord).where({ id: recordId }).first()
   }
 }

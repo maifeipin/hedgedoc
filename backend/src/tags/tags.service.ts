@@ -3,16 +3,16 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { FieldNameNoteTag, FieldNameTag, TableNoteTag, TableTag } from '@hedgedoc/database';
-import { Injectable } from '@nestjs/common';
-import { Knex } from 'knex';
-import { InjectConnection } from 'nest-knexjs';
+import { FieldNameNoteTag, FieldNameTag, TableNoteTag, TableTag } from '@hedgedoc/database'
+import { Injectable } from '@nestjs/common'
+import { Knex } from 'knex'
+import { InjectConnection } from 'nest-knexjs'
 
 export interface TagWithCount {
-  id: number;
-  name: string;
-  color?: string;
-  count: number;
+  id: number
+  name: string
+  color?: string
+  count: number
 }
 
 @Injectable()
@@ -35,9 +35,9 @@ export class TagsService {
       )
       .leftJoin(TableNoteTag, `${TableTag}.id`, `${TableNoteTag}.tagId`)
       .groupBy(`${TableTag}.id`, `${TableTag}.name`, `${TableTag}.color`)
-      .orderBy('count', 'desc');
+      .orderBy('count', 'desc')
 
-    return rows;
+    return rows
   }
 
   /**
@@ -46,27 +46,27 @@ export class TagsService {
   async setNoteTags(noteId: number, tagNames: string[]): Promise<void> {
     const cleanNames = Array.from(
       new Set(tagNames.map((t) => t.trim().toLowerCase()).filter(Boolean)),
-    );
+    )
 
     await this.knex.transaction(async (trx) => {
       // 1. 清理该笔记的原有标签映射
-      await trx(TableNoteTag).where(FieldNameNoteTag.noteId, noteId).del();
+      await trx(TableNoteTag).where(FieldNameNoteTag.noteId, noteId).del()
 
-      if (cleanNames.length === 0) return;
+      if (cleanNames.length === 0) return
 
       for (const tagName of cleanNames) {
-        let tag = await trx(TableTag).where(FieldNameTag.name, tagName).first();
+        let tag = await trx(TableTag).where(FieldNameTag.name, tagName).first()
         if (!tag) {
-          const [createdId] = await trx(TableTag).insert({ [FieldNameTag.name]: tagName }, ['id']);
-          const tagId = typeof createdId === 'object' ? createdId.id : createdId;
-          tag = { id: tagId };
+          const [createdId] = await trx(TableTag).insert({ [FieldNameTag.name]: tagName }, ['id'])
+          const tagId = typeof createdId === 'object' ? createdId.id : createdId
+          tag = { id: tagId }
         }
 
         await trx(TableNoteTag).insert({
           [FieldNameNoteTag.noteId]: noteId,
           [FieldNameNoteTag.tagId]: tag.id,
-        });
+        })
       }
-    });
+    })
   }
 }

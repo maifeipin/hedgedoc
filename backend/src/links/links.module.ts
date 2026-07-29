@@ -3,9 +3,10 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Module } from '@nestjs/common';
-import { LinksService } from './links.service';
-import { LinksController } from './links.controller';
+import { Module } from '@nestjs/common'
+
+import { LinksController } from './links.controller'
+import { LinksService } from './links.service'
 
 @Module({
   providers: [LinksService],

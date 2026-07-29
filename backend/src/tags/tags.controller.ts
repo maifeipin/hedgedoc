@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common'
 
-import { TagsService } from './tags.service';
+import { TagsService } from './tags.service'
 
 @Controller('api/v2/tags')
 export class TagsController {
@@ -13,7 +13,7 @@ export class TagsController {
 
   @Get()
   async getAllTags() {
-    return await this.tagsService.getAllTagsWithCount();
+    return await this.tagsService.getAllTagsWithCount()
   }
 
   @Post('note/:noteId')
@@ -21,7 +21,7 @@ export class TagsController {
     @Param('noteId', ParseIntPipe) noteId: number,
     @Body('tags') tags: string[],
   ) {
-    await this.tagsService.setNoteTags(noteId, tags || []);
-    return { success: true };
+    await this.tagsService.setNoteTags(noteId, tags || [])
+    return { success: true }
   }
 }

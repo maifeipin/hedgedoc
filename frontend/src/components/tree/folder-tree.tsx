@@ -158,7 +158,6 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ _activeNoteId, _onSelect
             onChange={(e) => setNewFolderName(e.target.value)}
             placeholder='文件夹名称...'
             className='form-control form-control-sm text-xs'
-            autoFocus
           />
           <button type='submit' className='btn btn-sm btn-success text-xs px-2'>
             保存

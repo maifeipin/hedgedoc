@@ -86,7 +86,6 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
             onChange={(e) => setNewTagName(e.target.value)}
             placeholder='标签名称...'
             className='form-control form-control-sm text-xs'
-            autoFocus
           />
           <button type='submit' className='btn btn-sm btn-success text-xs px-2'>
             添加

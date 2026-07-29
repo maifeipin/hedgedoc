@@ -7,7 +7,7 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestj
 
 import { TagsService } from './tags.service';
 
-@Controller('api/v2/tags')
+@Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 

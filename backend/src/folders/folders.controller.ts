@@ -17,7 +17,7 @@ import {
 
 import { FoldersService } from './folders.service';
 
-@Controller('api/v2/folders')
+@Controller('folders')
 export class FoldersController {
   constructor(private readonly foldersService: FoldersService) {}
 

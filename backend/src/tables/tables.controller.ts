@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Request } from '@nestjs/common'
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Request } from '@nestjs/common';
 
-import { TablesService } from './tables.service'
+import { TablesService } from './tables.service';
 
 @Controller('api/v2/tables')
 export class TablesController {
@@ -17,13 +17,13 @@ export class TablesController {
     @Body('name') name: string,
     @Body('folderId') folderId?: number,
   ) {
-    const userId = req.user?.id || 1
-    return await this.tablesService.createTable(name, userId, folderId)
+    const userId = req.user?.id || 1;
+    return await this.tablesService.createTable(name, userId, folderId);
   }
 
   @Get(':id')
   async getTable(@Param('id', ParseIntPipe) id: number) {
-    return await this.tablesService.getTableDetails(id)
+    return await this.tablesService.getTableDetails(id);
   }
 
   @Post(':id/columns')
@@ -33,7 +33,7 @@ export class TablesController {
     @Body('type') type: string,
     @Body('options') options?: any,
   ) {
-    return await this.tablesService.addColumn(id, name, type, options)
+    return await this.tablesService.addColumn(id, name, type, options);
   }
 
   @Post(':id/records')
@@ -42,7 +42,7 @@ export class TablesController {
     @Body('data') data: Record<string, any>,
     @Body('noteId') noteId?: number,
   ) {
-    return await this.tablesService.createRecord(id, data || {}, noteId)
+    return await this.tablesService.createRecord(id, data || {}, noteId);
   }
 
   @Patch('records/:recordId/cell')
@@ -51,6 +51,6 @@ export class TablesController {
     @Body('columnId') columnId: string,
     @Body('value') value: any,
   ) {
-    return await this.tablesService.updateRecordCell(recordId, columnId, value)
+    return await this.tablesService.updateRecordCell(recordId, columnId, value);
   }
 }

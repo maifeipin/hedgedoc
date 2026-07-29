@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common'
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 
-import { LinksService } from './links.service'
+import { LinksService } from './links.service';
 
 @Controller('api/v2/notes')
 export class LinksController {
@@ -13,6 +13,6 @@ export class LinksController {
 
   @Get(':id/backlinks')
   async getBacklinks(@Param('id', ParseIntPipe) id: number) {
-    return await this.linksService.getBacklinks(id)
+    return await this.linksService.getBacklinks(id);
   }
 }

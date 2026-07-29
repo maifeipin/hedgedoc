@@ -3,20 +3,20 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { FieldNameAlias, FieldNameNoteLink, TableAlias, TableNoteLink } from '@hedgedoc/database'
-import { Injectable } from '@nestjs/common'
-import { OnEvent } from '@nestjs/event-emitter'
-import { Knex } from 'knex'
-import { InjectConnection } from 'nest-knexjs'
+import { FieldNameAlias, FieldNameNoteLink, TableAlias, TableNoteLink } from '@hedgedoc/database';
+import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { Knex } from 'knex';
+import { InjectConnection } from 'nest-knexjs';
 
-import { NoteEvent } from '../events'
+import { NoteEvent } from '../events';
 
 export interface BacklinkResult {
-  id: number
-  sourceNoteId: number
-  sourceTitle: string
-  contextSnippet?: string
-  createdAt: string
+  id: number;
+  sourceNoteId: number;
+  sourceTitle: string;
+  contextSnippet?: string;
+  createdAt: string;
 }
 
 @Injectable()
@@ -30,36 +30,36 @@ export class LinksService {
    * 从 Markdown 中正则提取所有 [[笔记标题]]
    */
   extractWikiLinks(content: string): { title: string; snippet: string }[] {
-    const regex = /\[\[(.*?)\]\]/g
-    const matches: { title: string; snippet: string }[] = []
-    let match: RegExpExecArray | null
+    const regex = /\[\[(.*?)\]\]/g;
+    const matches: { title: string; snippet: string }[] = [];
+    let match: RegExpExecArray | null;
 
     while ((match = regex.exec(content)) !== null) {
-      const title = match[1].trim()
-      if (!title) continue
+      const title = match[1].trim();
+      if (!title) continue;
 
       // 提取前后约 80 字字符作为上下文摘要
-      const start = Math.max(0, match.index - 40)
-      const end = Math.min(content.length, match.index + match[0].length + 40)
-      const snippet = content.slice(start, end).replace(/\n/g, ' ')
+      const start = Math.max(0, match.index - 40);
+      const end = Math.min(content.length, match.index + match[0].length + 40);
+      const snippet = content.slice(start, end).replace(/\n/g, ' ');
 
-      matches.push({ title, snippet })
+      matches.push({ title, snippet });
     }
 
-    return matches
+    return matches;
   }
 
   /**
    * 更新笔记的反向链接记录 (包含 Diff 与僵尸行擦除删除)
    */
   async syncNoteLinks(sourceNoteId: number, markdownContent: string): Promise<void> {
-    const extracted = this.extractWikiLinks(markdownContent)
+    const extracted = this.extractWikiLinks(markdownContent);
 
     await this.knex.transaction(async (trx) => {
       // 1. 删除旧的该 noteId 发出的链接
-      await trx(TableNoteLink).where(FieldNameNoteLink.sourceNoteId, sourceNoteId).del()
+      await trx(TableNoteLink).where(FieldNameNoteLink.sourceNoteId, sourceNoteId).del();
 
-      if (extracted.length === 0) return
+      if (extracted.length === 0) return;
 
       // 2. 查询已有 noteId/alias 匹配 targetNoteId
       for (const item of extracted) {
@@ -67,20 +67,18 @@ export class LinksService {
         const targetAlias = await trx(TableAlias)
           .select(FieldNameAlias.noteId)
           .where(FieldNameAlias.alias, item.title)
-          .first()
+          .first();
 
-        const targetNoteId: number | null = targetAlias
-          ? targetAlias[FieldNameAlias.noteId]
-          : null
+        const targetNoteId: number | null = targetAlias ? targetAlias[FieldNameAlias.noteId] : null;
 
         await trx(TableNoteLink).insert({
           [FieldNameNoteLink.sourceNoteId]: sourceNoteId,
           [FieldNameNoteLink.targetNoteId]: targetNoteId,
           [FieldNameNoteLink.rawTargetTitle]: item.title,
           [FieldNameNoteLink.contextSnippet]: item.snippet,
-        })
+        });
       }
-    })
+    });
   }
 
   /**
@@ -89,27 +87,27 @@ export class LinksService {
   @OnEvent(NoteEvent.CREATED)
   @OnEvent(NoteEvent.ALIAS_UPDATE)
   async reconcileLinks(noteId: number, titleOrAlias?: string): Promise<void> {
-    const titlesToMatch: string[] = []
+    const titlesToMatch: string[] = [];
 
     if (titleOrAlias) {
-      titlesToMatch.push(titleOrAlias)
+      titlesToMatch.push(titleOrAlias);
     }
 
     // 从 DB 深度补全该 Note 的所有已知别名与 ID 字符串，防范事件参数缺失
     const aliases = await this.knex(TableAlias)
       .select(FieldNameAlias.alias)
-      .where(FieldNameAlias.noteId, noteId)
+      .where(FieldNameAlias.noteId, noteId);
 
     aliases.forEach((a) => {
       if (a[FieldNameAlias.alias] && !titlesToMatch.includes(a[FieldNameAlias.alias])) {
-        titlesToMatch.push(a[FieldNameAlias.alias])
+        titlesToMatch.push(a[FieldNameAlias.alias]);
       }
-    })
+    });
 
     // 亦支持用 "Note #id" 或 "id" 形式作为引用匹配
-    titlesToMatch.push(String(noteId))
+    titlesToMatch.push(String(noteId));
 
-    if (titlesToMatch.length === 0) return
+    if (titlesToMatch.length === 0) return;
 
     await this.knex(TableNoteLink)
       .whereNull(FieldNameNoteLink.targetNoteId)
@@ -117,7 +115,7 @@ export class LinksService {
       .update({
         [FieldNameNoteLink.targetNoteId]: noteId,
         updatedAt: this.knex.fn.now(),
-      })
+      });
   }
 
   /**
@@ -137,7 +135,7 @@ export class LinksService {
         `${TableAlias}.${FieldNameAlias.noteId}`,
         `${TableNoteLink}.sourceNoteId`,
       )
-      .where(`${TableNoteLink}.targetNoteId`, noteId)
+      .where(`${TableNoteLink}.targetNoteId`, noteId);
 
     return rows.map((r) => ({
       id: r.id,
@@ -145,6 +143,6 @@ export class LinksService {
       sourceTitle: r.sourceTitle || `Note #${r.sourceNoteId}`,
       contextSnippet: r.contextSnippet,
       createdAt: r.createdAt,
-    }))
+    }));
   }
 }

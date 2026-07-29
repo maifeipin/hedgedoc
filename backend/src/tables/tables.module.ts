@@ -3,10 +3,10 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Module } from '@nestjs/common'
+import { Module } from '@nestjs/common';
 
-import { TablesController } from './tables.controller'
-import { TablesService } from './tables.service'
+import { TablesController } from './tables.controller';
+import { TablesService } from './tables.service';
 
 @Module({
   providers: [TablesService],

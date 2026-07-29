@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-'use me'
+'use client'
 import React, { useState, useEffect } from 'react'
 
 export interface FolderNode {

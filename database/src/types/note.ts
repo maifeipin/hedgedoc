@@ -24,17 +24,21 @@ export interface Note {
 
   /** If a note should be visible in the public notes section */
   [FieldNameNote.publiclyVisible]: boolean
+
+  /** The ID of the folder this note belongs to */
+  [FieldNameNote.folderId]?: number
 }
 
 export enum FieldNameNote {
   id = 'id',
-  ownerId = 'owner_id',
+  ownerId = 'ownerId',
   version = 'version',
-  createdAt = 'created_at',
-  publiclyVisible = 'publicly_visible',
+  createdAt = 'createdAt',
+  publiclyVisible = 'publiclyVisible',
+  folderId = 'folderId',
 }
 
-export const TableNote = 'note'
+export const TableNote = 'notes'
 
 export type TypeInsertNote = Omit<Note, FieldNameNote.id>
 export type TypeUpdateNote =

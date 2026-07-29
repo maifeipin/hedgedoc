@@ -44,6 +44,14 @@ export enum NoteEvent {
    *   noteId: The id of the {@link Note}, which should be closed.
    */
   CLOSE_REALTIME = 'note.close_realtime',
+
+  /**
+   * Event triggered when a new note is created.
+   * Payload:
+   *   noteId: The id of the newly created note.
+   *   primaryAlias: Optional primary alias if given.
+   */
+  CREATED = 'note.created',
 }
 
 export interface NoteEventMap extends EventMap {
@@ -51,4 +59,5 @@ export interface NoteEventMap extends EventMap {
   [NoteEvent.ALIAS_UPDATE]: (noteId: number, primaryAlias?: string) => void;
   [NoteEvent.DELETION]: (noteId: number) => void;
   [NoteEvent.CLOSE_REALTIME]: (noteId: number) => void;
+  [NoteEvent.CREATED]: (noteId: number, primaryAlias?: string) => void;
 }

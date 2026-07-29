@@ -160,6 +160,8 @@ export class NoteService {
         );
       }
 
+      this.eventEmitter.emit(NoteEvent.CREATED, noteId, newAlias);
+
       return noteId;
     });
   }

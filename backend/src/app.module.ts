@@ -45,6 +45,10 @@ import { RevisionsModule } from './revisions/revisions.module';
 import { SessionModule } from './sessions/session.module';
 import { UsersModule } from './users/users.module';
 import { isDevMode } from './utils/dev-mode';
+import { FoldersModule } from './folders/folders.module';
+import { LinksModule } from './links/links.module';
+import { TagsModule } from './tags/tags.module';
+import { TablesModule } from './tables/tables.module';
 
 export const PUBLIC_API_PREFIX = '/api/v2';
 export const PRIVATE_API_PREFIX = '/api/private';
@@ -126,6 +130,10 @@ const routes: Routes = [
     MediaRedirectModule,
     MessageModule,
     ExploreModule,
+    FoldersModule,
+    LinksModule,
+    TagsModule,
+    TablesModule,
   ],
   controllers: [],
   providers: [

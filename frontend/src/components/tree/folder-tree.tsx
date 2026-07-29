@@ -152,7 +152,6 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     }
   }
 
-  // Flatten options for parent selection dropdown
   const getAllFolderOptions = (nodes: FolderNode[], prefix: string = ''): { id: number; name: string }[] => {
     let options: { id: number; name: string }[] = []
     nodes.forEach((n) => {
@@ -170,22 +169,30 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     const hasChildren = node.children && node.children.length > 0
     const isOver = draggedOverId === node.id
 
-    // Dynamic folder icon according to state
-    let folderIcon = node.isSystem ? '📥' : isExpanded ? '📂' : '📁'
-    if (!node.isSystem && node.name.startsWith('📁')) {
-      const cleanName = node.name.replace(/^📁\s*/, '')
-      folderIcon = isExpanded ? `📂 ${cleanName}` : `📁 ${cleanName}`
-    } else {
-      folderIcon = `${folderIcon} ${node.name.replace(/^[📥📁📂]\s*/, '')}`
-    }
+    // Dynamic folder icon without surrogate pair regex
+    let cleanName = node.name.trim()
+    if (cleanName.startsWith('📁')) cleanName = cleanName.replace('📁', '').trim()
+    if (cleanName.startsWith('📥')) cleanName = cleanName.replace('📥', '').trim()
+    if (cleanName.startsWith('📂')) cleanName = cleanName.replace('📂', '').trim()
+
+    const iconPrefix = node.isSystem ? '📥' : isExpanded ? '📂' : '📁'
+    const folderLabel = `${iconPrefix} ${cleanName}`
 
     return (
       <div key={node.id} className='select-none text-xs'>
         <div
+          role='treeitem'
+          aria-selected={isSelected}
+          tabIndex={0}
           onDragOver={(e) => handleDragOver(e, node.id)}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, node.id)}
           onClick={() => handleSelect(node.id)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleSelect(node.id)
+            }
+          }}
           className={`w-full flex items-center justify-between py-1.5 px-2 rounded cursor-pointer transition-all ${
             isSelected
               ? 'bg-primary text-white font-medium shadow-sm'
@@ -202,7 +209,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               }`}>
               {isExpanded ? '▼' : '▶'}
             </button>
-            <span className='truncate'>{folderIcon}</span>
+            <span className='truncate'>{folderLabel}</span>
           </div>
 
           <div className='flex items-center gap-1 opacity-80 hover:opacity-100 ms-1'>
@@ -275,15 +282,18 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
         </div>
       </div>
 
-      {/* Add Folder Modal / Drawer */}
+      {/* Add Folder Form Drawer */}
       {showAddForm && (
         <form
           onSubmit={handleCreateFolder}
           className='mb-3 p-2 bg-white dark:bg-neutral-800 border rounded shadow-sm flex flex-col gap-2'>
           <div className='text-xs font-semibold text-neutral-600 dark:text-neutral-300'>新建文件夹</div>
           <div>
-            <label className='text-xs text-neutral-500 mb-1 block'>选择上级目录：</label>
+            <label htmlFor='parent-folder-select' className='text-xs text-neutral-500 mb-1 block'>
+              选择上级目录：
+            </label>
             <select
+              id='parent-folder-select'
               value={selectedParentId || ''}
               onChange={(e) => setSelectedParentId(e.target.value ? parseInt(e.target.value, 10) : null)}
               className='form-select form-select-sm text-xs'>

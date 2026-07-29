@@ -46,7 +46,7 @@ export class TagsService {
         `${TableTag}.id`,
         `${TableTag}.name`,
         `${TableTag}.color`,
-        this.knex.raw('COUNT(note_tags.note_id)::int as count'),
+        this.knex.raw('COUNT("note_tags"."noteId")::int as count'),
       )
       .leftJoin(TableNoteTag, `${TableTag}.id`, `${TableNoteTag}.tagId`)
       .groupBy(`${TableTag}.id`, `${TableTag}.name`, `${TableTag}.color`)

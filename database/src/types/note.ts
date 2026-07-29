@@ -38,7 +38,7 @@ export enum FieldNameNote {
   folderId = 'folderId',
 }
 
-export const TableNote = 'notes'
+export const TableNote = 'note';
 
 export type TypeInsertNote = Omit<Note, FieldNameNote.id>
 export type TypeUpdateNote =

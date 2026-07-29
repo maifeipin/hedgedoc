@@ -5,6 +5,7 @@
  */
 
 /* oxlint-disable */
+const { TableNote, TableUser } = require('@hedgedoc/database');
 
 exports.up = async function (knex) {
   // 1. 文件夹/目录表 (folders) - camelCase
@@ -23,7 +24,7 @@ exports.up = async function (knex) {
       .unsigned()
       .notNullable()
       .references('id')
-      .inTable('users')
+      .inTable(TableUser)
       .onDelete('CASCADE');
     table.boolean('isSystem').notNullable().defaultTo(false);
     table.integer('sortOrder').notNullable().defaultTo(0);
@@ -33,8 +34,8 @@ exports.up = async function (knex) {
     table.index(['parentId'], 'idx_folders_parent_id');
   });
 
-  // 2. 给 notes 表添加 folderId 外键 (camelCase)
-  await knex.schema.alterTable('notes', (table) => {
+  // 2. 给 note 表添加 folderId 外键 (camelCase)
+  await knex.schema.alterTable(TableNote, (table) => {
     table
       .integer('folderId')
       .unsigned()
@@ -60,7 +61,7 @@ exports.up = async function (knex) {
       .unsigned()
       .notNullable()
       .references('id')
-      .inTable('notes')
+      .inTable(TableNote)
       .onDelete('CASCADE');
     table
       .integer('tagId')
@@ -82,14 +83,14 @@ exports.up = async function (knex) {
       .unsigned()
       .notNullable()
       .references('id')
-      .inTable('notes')
+      .inTable(TableNote)
       .onDelete('CASCADE');
     table
       .integer('targetNoteId')
       .unsigned()
       .nullable()
       .references('id')
-      .inTable('notes')
+      .inTable(TableNote)
       .onDelete('CASCADE');
     table.string('rawTargetTitle').notNullable();
     table.text('contextSnippet').nullable();
@@ -116,7 +117,7 @@ exports.up = async function (knex) {
       .unsigned()
       .notNullable()
       .references('id')
-      .inTable('users')
+      .inTable(TableUser)
       .onDelete('CASCADE');
     table.timestamp('createdAt', { useTz: false, precision: 3 }).defaultTo(knex.fn.now());
     table.timestamp('updatedAt', { useTz: false, precision: 3 }).defaultTo(knex.fn.now());
@@ -154,7 +155,7 @@ exports.up = async function (knex) {
       .unsigned()
       .nullable()
       .references('id')
-      .inTable('notes')
+      .inTable(TableNote)
       .onDelete('SET NULL');
     table.timestamp('createdAt', { useTz: false, precision: 3 }).defaultTo(knex.fn.now());
     table.timestamp('updatedAt', { useTz: false, precision: 3 }).defaultTo(knex.fn.now());
@@ -174,7 +175,7 @@ exports.down = async function (knex) {
   await knex.schema.dropTableIfExists('note_links');
   await knex.schema.dropTableIfExists('note_tags');
   await knex.schema.dropTableIfExists('tags');
-  await knex.schema.alterTable('notes', (table) => {
+  await knex.schema.alterTable(TableNote, (table) => {
     table.dropColumn('folderId');
   });
   await knex.schema.dropTableIfExists('folders');

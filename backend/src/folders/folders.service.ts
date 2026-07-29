@@ -128,7 +128,9 @@ export class FoldersService {
     }
 
     // 校验 2: 是否包含 MD 笔记
-    const noteInside = await this.knex('note').where({ folder_id: id, owner_id: userId }).first();
+    const noteInside = await (this.knex('note') as any)
+      .where({ folder_id: id, owner_id: userId })
+      .first();
     if (noteInside) {
       throw new BadRequestException('该目录包含 Markdown 笔记，请先移走或删除笔记后再删除');
     }
@@ -137,6 +139,8 @@ export class FoldersService {
   }
 
   async moveNoteToFolder(noteId: number, folderId: number, userId: number): Promise<void> {
-    await this.knex('note').where({ id: noteId, owner_id: userId }).update({ folder_id: folderId });
+    await (this.knex('note') as any)
+      .where({ id: noteId, owner_id: userId })
+      .update({ folder_id: folderId });
   }
 }

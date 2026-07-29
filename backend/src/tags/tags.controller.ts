@@ -17,7 +17,9 @@ export class TagsController {
   }
 
   @Post()
-  async createTag(@Body('name') name: string, @Body('color') color?: string) {
+  async createTag(@Body() body: { name: string; color?: string }) {
+    const name = body?.name || '';
+    const color = body?.color;
     return await this.tagsService.createTag(name, color);
   }
 

@@ -3,11 +3,12 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
+import { FieldNameAlias, FieldNameNoteLink, TableAlias, TableNoteLink } from '@hedgedoc/database';
 import { Injectable } from '@nestjs/common';
-import { InjectConnection } from 'nest-knexjs';
-import { Knex } from 'knex';
-import { TableNoteLink, FieldNameNoteLink, TableAlias, FieldNameAlias } from '@hedgedoc/database';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Knex } from 'knex';
+import { InjectConnection } from 'nest-knexjs';
+
 import { NoteEvent } from '../events';
 
 export interface BacklinkResult {
@@ -68,7 +69,9 @@ export class LinksService {
           .where(FieldNameAlias.alias, item.title)
           .first();
 
-        let targetNoteId: number | null = targetAlias ? targetAlias[FieldNameAlias.noteId] : null;
+        const targetNoteId: number | null = targetAlias
+          ? targetAlias[FieldNameAlias.noteId]
+          : null;
 
         await trx(TableNoteLink).insert({
           [FieldNameNoteLink.sourceNoteId]: sourceNoteId,
@@ -129,7 +132,11 @@ export class LinksService {
         `${TableNoteLink}.createdAt`,
         `${TableAlias}.alias as sourceTitle`,
       )
-      .leftJoin(TableAlias, `${TableAlias}.${FieldNameAlias.noteId}`, `${TableNoteLink}.sourceNoteId`)
+      .leftJoin(
+        TableAlias,
+        `${TableAlias}.${FieldNameAlias.noteId}`,
+        `${TableNoteLink}.sourceNoteId`,
+      )
       .where(`${TableNoteLink}.targetNoteId`, noteId);
 
     return rows.map((r) => ({

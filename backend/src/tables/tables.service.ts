@@ -3,10 +3,16 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
+import {
+  FieldNameTable,
+  FieldNameTableColumn,
+  TableTable,
+  TableTableColumn,
+  TableTableRecord,
+} from '@hedgedoc/database';
 import { Injectable } from '@nestjs/common';
-import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
-import { TableTable, TableTableColumn, TableTableRecord, FieldNameTable, FieldNameTableColumn } from '@hedgedoc/database';
+import { InjectConnection } from 'nest-knexjs';
 
 @Injectable()
 export class TablesService {

@@ -3,7 +3,8 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, Request } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Request } from '@nestjs/common';
+
 import { FoldersService } from './folders.service';
 
 @Controller('api/v2/folders')
@@ -37,10 +38,7 @@ export class FoldersController {
   }
 
   @Delete(':id')
-  async deleteFolder(
-    @Request() req: any,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  async deleteFolder(@Request() req: any, @Param('id', ParseIntPipe) id: number) {
     const userId = req.user?.id || 1;
     await this.foldersService.deleteFolder(id, userId);
     return { success: true };

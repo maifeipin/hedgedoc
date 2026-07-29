@@ -3,10 +3,10 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
+import { FieldNameNoteTag, FieldNameTag, TableNoteTag, TableTag } from '@hedgedoc/database';
 import { Injectable } from '@nestjs/common';
-import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
-import { TableTag, TableNoteTag, FieldNameTag, FieldNameNoteTag } from '@hedgedoc/database';
+import { InjectConnection } from 'nest-knexjs';
 
 export interface TagWithCount {
   id: number;
@@ -44,7 +44,9 @@ export class TagsService {
    * 为笔记增量设置标签 (解析 #tag 或 yaml 标签后刷入)
    */
   async setNoteTags(noteId: number, tagNames: string[]): Promise<void> {
-    const cleanNames = Array.from(new Set(tagNames.map((t) => t.trim().toLowerCase()).filter(Boolean)));
+    const cleanNames = Array.from(
+      new Set(tagNames.map((t) => t.trim().toLowerCase()).filter(Boolean)),
+    );
 
     await this.knex.transaction(async (trx) => {
       // 1. 清理该笔记的原有标签映射

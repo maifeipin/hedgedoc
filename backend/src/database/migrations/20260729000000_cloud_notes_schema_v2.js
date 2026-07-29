@@ -161,7 +161,9 @@ exports.up = async function (knex) {
   });
 
   // 8. jsonb_path_ops GIN 索引
-  await knex.raw('CREATE INDEX idx_table_records_data_path ON table_records USING gin (data jsonb_path_ops);');
+  await knex.raw(
+    'CREATE INDEX idx_table_records_data_path ON table_records USING gin (data jsonb_path_ops);',
+  );
 };
 
 exports.down = async function (knex) {

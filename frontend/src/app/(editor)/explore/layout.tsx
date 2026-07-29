@@ -110,6 +110,7 @@ export default function ExploreLayout({ children }: ExploreLayoutProps) {
           {/* Resizer Splitter Drag Handle */}
           {!isCollapsed && (
             <div
+              role='separator'
               onMouseDown={startResizing}
               className='bg-secondary-subtle hover-bg-primary cursor-col-resize user-select-none'
               style={{

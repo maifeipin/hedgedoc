@@ -24,10 +24,10 @@
       "isUnpinned": "Not pinned on explore page"
     },
     "modes": {
-      "my": "My notes",
-      "shared": "Shared with me",
-      "public": "Public notes",
-      "visited": "Recently visited"
+      "my": "我的笔记",
+      "shared": "与我共享",
+      "public": "公开笔记",
+      "visited": "最近访问"
     },
     "filters": {
       "byType": {

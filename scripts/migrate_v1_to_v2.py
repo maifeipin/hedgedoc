@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 The HedgeDoc developers (see AUTHORS file)
+#
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 HedgeDoc v1.9.9 ➔ HedgeDoc v2 云笔记数据一键无损迁移脚本
 

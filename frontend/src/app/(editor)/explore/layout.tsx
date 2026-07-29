@@ -111,6 +111,7 @@ export default function ExploreLayout({ children }: ExploreLayoutProps) {
           {!isCollapsed && (
             <div
               role='separator'
+              tabIndex={0}
               onMouseDown={startResizing}
               className='bg-secondary-subtle hover-bg-primary cursor-col-resize user-select-none'
               style={{

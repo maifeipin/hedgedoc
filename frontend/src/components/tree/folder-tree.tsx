@@ -286,10 +286,10 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
   return (
     <div className='w-full flex flex-col bg-slate-50/80 dark:bg-neutral-900/80 p-2.5 rounded-xl border border-slate-200/60 dark:border-neutral-800'>
       {/* Header controls */}
-      <div className='flex items-center justify-between pb-3 mb-2 border-b border-slate-200 dark:border-neutral-800'>
-        <h2 className='font-bold text-slate-800 dark:text-neutral-100 text-[1.25rem] m-0 d-flex align-items-center'>
+      <div className='flex items-center justify-between pb-2 mb-1 border-b border-slate-200/80 dark:border-neutral-800 px-1'>
+        <h3 className='font-bold text-slate-700 dark:text-neutral-200 text-xs m-0 flex items-center'>
           目录与工作台
-        </h2>
+        </h3>
         <div className='flex items-center gap-1.5'>
           <button
             type='button'

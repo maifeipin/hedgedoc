@@ -185,7 +185,16 @@ describe('ExploreService', () => {
         /select "alias"."alias" as "primaryAlias", "revision"."title" as "title", "revision"."note_type" as "noteType", "user"."username" as "ownerUsername", "note"."created_at" as "createdAt", "revision"."created_at" as "lastChangedAt", "revision"."uuid" as "revisionUuid" from "note" inner join "alias" on "alias"."note_id" = "note"."id" inner join "user" on "user"."id" = "note"."owner_id" inner join \(select "uuid", "note_id" from \(select "uuid", "note_id", row_number\(\) over \(partition by "note_id" order by "created_at" desc\) as rn from "revision"\) as "latest_revisions_per_note" where "rn" = \$1\) as "latest_revision" on "latest_revision"."note_id" = "note"."id" inner join "revision" on "revision"."note_id" = "note"."id" and "revision"."uuid" = "latest_revision"."uuid" inner join "note_tags" on "note_tags"."noteId" = "note"."id" inner join "tags" on "tags"."id" = "note_tags"."tagId" where "alias"."is_primary" = \$2 and "note"."owner_id" = \$3 and "tags"."name" = \$4 order by "revision"."created_at" desc limit \$5/,
         [1, true, mockUserId, 'mockTag', ENTRIES_PER_PAGE_LIMIT],
       ],
-    ] as [string, NoteType, OptionalSortMode, string, number | undefined, string | undefined, RegExp, unknown[]][])(
+    ] as [
+      string,
+      NoteType,
+      OptionalSortMode,
+      string,
+      number | undefined,
+      string | undefined,
+      RegExp,
+      unknown[],
+    ][])(
       'correctly get all notes owned by user with',
       (name, noteType, sortBy, search, folderId, tagName, regex, bindings) => {
         // oxlint-disable-next-line jest/valid-title
@@ -204,7 +213,7 @@ describe('ExploreService', () => {
             sortBy,
             search,
             folderId,
-            tagName
+            tagName,
           );
           expect(exploreEntries.length).toBe(1);
           expect(exploreEntries[0]).toEqual({

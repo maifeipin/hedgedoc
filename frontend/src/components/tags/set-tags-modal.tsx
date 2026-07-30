@@ -92,7 +92,9 @@ export const SetTagsModal: React.FC<SetTagsModalProps> = ({ show, onHide, noteAl
       </Modal.Header>
       <Modal.Body>
         <div className='mb-3'>
-          <label htmlFor='new-tag-input' className='form-label text-sm fw-medium text-slate-700 dark:text-neutral-300'>添加新标签</label>
+          <label htmlFor='new-tag-input' className='form-label text-sm fw-medium text-slate-700 dark:text-neutral-300'>
+            添加新标签
+          </label>
           <div className='d-flex gap-2'>
             <input
               id='new-tag-input'
@@ -114,7 +116,9 @@ export const SetTagsModal: React.FC<SetTagsModalProps> = ({ show, onHide, noteAl
           </div>
         </div>
 
-        <div className='form-label text-sm fw-medium text-slate-700 dark:text-neutral-300 mb-2'>请选择以下已有标签：</div>
+        <div className='form-label text-sm fw-medium text-slate-700 dark:text-neutral-300 mb-2'>
+          请选择以下已有标签：
+        </div>
         <div className='d-flex flex-wrap gap-2 border rounded p-2 bg-slate-50 dark:bg-neutral-900/50 dark:border-neutral-700 min-h-[100px] max-h-60 overflow-auto'>
           {/* Include currently selected tags even if they don't exist in tags array yet */}
           {Array.from(new Set([...tags.map((t) => t.name), ...Array.from(selectedTags)])).map((tagName) => {

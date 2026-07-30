@@ -421,7 +421,10 @@ export class ExploreService {
       ]) as T;
     }
     if (folderId !== undefined) {
-      filteredQuery = filteredQuery.andWhere(`${TableNote}.${FieldNameNote.folderId}`, folderId) as T;
+      filteredQuery = filteredQuery.andWhere(
+        `${TableNote}.${FieldNameNote.folderId}`,
+        folderId,
+      ) as T;
     }
     if (tagName) {
       filteredQuery = filteredQuery

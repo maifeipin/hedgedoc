@@ -26,7 +26,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  
+
   const selectedFolderIdParam = searchParams?.get('folderId')
   const selectedFolderId = selectedFolderIdParam ? parseInt(selectedFolderIdParam, 10) : null
 
@@ -75,7 +75,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
 
   const handleSelect = (folderId: number) => {
     const newId = selectedFolderId === folderId ? null : folderId
-    
+
     const params = new URLSearchParams(searchParams?.toString() || '')
     if (newId) {
       params.set('folderId', newId.toString())

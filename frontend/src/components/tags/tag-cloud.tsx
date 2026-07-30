@@ -23,13 +23,13 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  
+
   const selectedTag = searchParams?.get('tag')
 
   const [tags, setTags] = useState<TagItem[]>([])
   const [newTagName, setNewTagName] = useState<string>('')
   const [showTagForm, setShowTagForm] = useState<boolean>(false)
-  
+
   const [presetOpen, setPresetOpen] = useState<boolean>(true)
   const [activeOpen, setActiveOpen] = useState<boolean>(true)
   const [unusedOpen, setUnusedOpen] = useState<boolean>(true)
@@ -52,7 +52,7 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
 
   const handleTagClick = (name: string) => {
     const next = selectedTag === name ? null : name
-    
+
     const params = new URLSearchParams(searchParams?.toString() || '')
     if (next) {
       params.set('tag', next)
@@ -181,7 +181,12 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
 
           {/* Unused Custom Tags Group */}
           {unusedTags.length > 0 && (
-            <div className={systemTags.length > 0 || activeTags.length > 0 ? 'pt-1 border-t border-slate-200/60 dark:border-neutral-800' : ''}>
+            <div
+              className={
+                systemTags.length > 0 || activeTags.length > 0
+                  ? 'pt-1 border-t border-slate-200/60 dark:border-neutral-800'
+                  : ''
+              }>
               <button
                 type='button'
                 onClick={() => setUnusedOpen(!unusedOpen)}

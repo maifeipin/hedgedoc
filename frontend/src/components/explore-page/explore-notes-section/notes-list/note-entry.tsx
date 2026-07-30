@@ -111,7 +111,7 @@ export const NoteListEntry: React.FC<NoteListEntryProps> = ({
       const tagName = data.substring(4)
       // Check if tag is already present
       if (tags.includes(tagName)) return
-      
+
       try {
         const newTags = [...tags, tagName]
         const res = await fetch(`/api/v2/tags/note/${primaryAlias}`, {

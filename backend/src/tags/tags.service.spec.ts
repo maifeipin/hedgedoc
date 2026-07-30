@@ -40,7 +40,12 @@ describe('TagsService', () => {
         [FieldNameTag.color]: '#3b82f6',
         createdAt: '2026-07-29 00:00:00',
       };
-      mockInsert(tracker, TableTag, [FieldNameTag.color, 'creatorId', FieldNameTag.name], [insertedRow]);
+      mockInsert(
+        tracker,
+        TableTag,
+        [FieldNameTag.color, 'creatorId', FieldNameTag.name],
+        [insertedRow],
+      );
 
       const result = await service.createTag('Important', '#3b82f6', 1);
       expect(result.id).toBe(7);

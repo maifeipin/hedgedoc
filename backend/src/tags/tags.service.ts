@@ -3,7 +3,14 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { FieldNameNoteTag, FieldNameTag, TableNoteTag, TableTag, TableNote, FieldNameNote } from '@hedgedoc/database';
+import {
+  FieldNameNoteTag,
+  FieldNameTag,
+  TableNoteTag,
+  TableTag,
+  TableNote,
+  FieldNameNote,
+} from '@hedgedoc/database';
 import { Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
 import { InjectConnection } from 'nest-knexjs';
@@ -49,7 +56,10 @@ export class TagsService {
         `${TableTag}.id`,
         `${TableTag}.name`,
         `${TableTag}.color`,
-        this.knex.raw(`COUNT(CASE WHEN "${TableNote}"."${FieldNameNote.ownerId}" = ? THEN "${TableNoteTag}"."noteId" END)::int as count`, [userId])
+        this.knex.raw(
+          `COUNT(CASE WHEN "${TableNote}"."${FieldNameNote.ownerId}" = ? THEN "${TableNoteTag}"."noteId" END)::int as count`,
+          [userId],
+        ),
       )
       .leftJoin(TableNoteTag, `${TableTag}.id`, `${TableNoteTag}.tagId`)
       .leftJoin(TableNote, `${TableNoteTag}.noteId`, `${TableNote}.id`)

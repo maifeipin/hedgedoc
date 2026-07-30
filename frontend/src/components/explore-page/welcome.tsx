@@ -69,7 +69,9 @@ export const Welcome: React.FC = () => {
             <span className='text-lg leading-none'>📝</span>
             <div className='d-flex flex-column justify-content-center'>
               <div className='text-[10px] text-slate-500 dark:text-neutral-400 font-medium leading-tight'>笔记总数</div>
-              <div className='fw-bold text-primary dark:text-blue-400 text-sm leading-tight mt-0.5'>{loading ? '-' : stats.totalNotes}</div>
+              <div className='fw-bold text-primary dark:text-blue-400 text-sm leading-tight mt-0.5'>
+                {loading ? '-' : stats.totalNotes}
+              </div>
             </div>
           </div>
 

@@ -58,11 +58,11 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
           <SortButton selected={sortMode} onChange={setSortMode} showLastVisitedOptions={mode === Mode.VISITED} />
         </search>
       </div>
-      <NotesList 
-        mode={mode} 
-        sort={sortMode} 
-        searchFilter={searchFilter} 
-        typeFilter={filterByType} 
+      <NotesList
+        mode={mode}
+        sort={sortMode}
+        searchFilter={searchFilter}
+        typeFilter={filterByType}
         folderId={folderIdString ? parseInt(folderIdString, 10) : undefined}
         tagFilter={tagFilter || undefined}
       />

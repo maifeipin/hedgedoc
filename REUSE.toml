@@ -204,3 +204,9 @@ path = "backend/src/database/**.md"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2024 The HedgeDoc developers (see AUTHORS file)"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+[[annotations]]
+path = "DEV_WORKFLOW.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 The HedgeDoc developers (see AUTHORS file)"
+SPDX-License-Identifier = "CC-BY-SA-4.0"

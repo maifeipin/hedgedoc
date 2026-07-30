@@ -512,12 +512,12 @@ export class ExploreService {
         .count<{ count: string }>('id as count')
         .first(),
       this.knex(TableFolder)
-        .where('owner_id', userId)
+        .where(FieldNameFolder.ownerId, userId)
         .count<{ count: string }>('id as count')
         .first(),
       this.knex(TableNoteTag)
         .join(TableNote, `${TableNoteTag}.noteId`, `${TableNote}.id`)
-        .where(`${TableNote}.owner_id`, userId)
+        .where(`${TableNote}.${FieldNameNote.ownerId}`, userId)
         .countDistinct<{ count: string }>(`${TableNoteTag}.tagId as count`)
         .first(),
       this.knex(TableTag).count<{ count: string }>('id as count').first(),

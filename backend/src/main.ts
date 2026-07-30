@@ -23,6 +23,7 @@ async function bootstrap(): Promise<void> {
   const app = (await NestFactory.create(
     AppModule,
     new FastifyAdapter({
+      trustProxy: true,
       routerOptions: {
         ignoreTrailingSlash: true,
       },

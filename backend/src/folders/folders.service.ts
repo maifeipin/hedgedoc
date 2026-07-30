@@ -78,16 +78,16 @@ export class FoldersService {
       .where(FieldNameFolder.ownerId, userId)
       .orderBy(FieldNameFolder.sortOrder, 'asc');
 
-    const noteCountsRaw = await (this.knex('note') as any)
-      .where('owner_id', userId)
-      .whereNotNull('folder_id')
-      .select('folder_id')
-      .count('id as count')
-      .groupBy('folder_id');
+    const noteCountsRaw = await (this.knex(TableNote) as any)
+      .where(FieldNameNote.ownerId, userId)
+      .whereNotNull(FieldNameNote.folderId)
+      .select(FieldNameNote.folderId)
+      .count(`${FieldNameNote.id} as count`)
+      .groupBy(FieldNameNote.folderId);
 
     const directCountsMap = new Map<number, number>();
-    (noteCountsRaw as Array<{ folder_id: number; count: string | number }>).forEach((row) => {
-      directCountsMap.set(Number(row.folder_id), parseInt(String(row.count), 10));
+    (noteCountsRaw as Array<any>).forEach((row) => {
+      directCountsMap.set(Number(row[FieldNameNote.folderId]), parseInt(String(row.count), 10));
     });
 
     const folderMap = new Map<number, FolderNode>();
@@ -138,7 +138,7 @@ export class FoldersService {
 
   async updateFolder(id: number, userId: number, updates: Partial<Folder>): Promise<Folder> {
     await this.knex(TableFolder)
-      .where({ id, ownerId: userId })
+      .where({ id, [FieldNameFolder.ownerId]: userId })
       .update({
         ...updates,
         updatedAt: this.knex.fn.now(),
@@ -148,14 +148,14 @@ export class FoldersService {
 
   async deleteFolder(id: number, userId: number): Promise<void> {
     // 校验 1: 是否有下级子文件夹
-    const subFolder = await this.knex(TableFolder).where({ parentId: id, ownerId: userId }).first();
+    const subFolder = await this.knex(TableFolder).where({ [FieldNameFolder.parentId]: id, [FieldNameFolder.ownerId]: userId }).first();
     if (subFolder) {
       throw new BadRequestException('该目录包含子文件夹，请先清空子文件夹后再删除');
     }
 
     // 校验 2: 是否包含 MD 笔记
-    const noteInside = await (this.knex('note') as any)
-      .where({ folder_id: id, owner_id: userId })
+    const noteInside = await (this.knex(TableNote) as any)
+      .where({ [FieldNameNote.folderId]: id, [FieldNameNote.ownerId]: userId })
       .first();
     if (noteInside) {
       throw new BadRequestException('该目录包含 Markdown 笔记，请先移走或删除笔记后再删除');

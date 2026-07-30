@@ -7,7 +7,7 @@ import { MediaBackendType } from '@hedgedoc/commons';
 import { Inject, Injectable } from '@nestjs/common';
 import { FileTypeResult } from 'file-type';
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { posix as pathPosix } from 'path';
 
 import mediaConfiguration, { MediaConfig } from '../../config/media.config';
 import { MediaBackendError } from '../../errors/errors';
@@ -97,7 +97,7 @@ export class FilesystemBackend implements MediaBackend {
     if (!/^[a-zA-Z0-9]+$/.test(extension)) {
       throw new MediaBackendError(`Invalid file extension: ${extension}`);
     }
-    return join(this.uploadDirectory, `${fileName}.${extension}`);
+    return pathPosix.join(this.uploadDirectory, `${fileName}.${extension}`);
   }
 
   private async ensureDirectory(): Promise<void> {

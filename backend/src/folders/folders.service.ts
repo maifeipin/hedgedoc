@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { FieldNameFolder, Folder, TableFolder } from '@hedgedoc/database';
+import { FieldNameFolder, Folder, TableFolder, TableNote, FieldNameNote } from '@hedgedoc/database';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
 import { InjectConnection } from 'nest-knexjs';

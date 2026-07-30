@@ -25,6 +25,7 @@ import {
   TableFolder,
   TableTag,
   TableNoteTag,
+  FieldNameFolder,
 } from '@hedgedoc/database';
 import { Injectable } from '@nestjs/common';
 import { Knex } from 'knex';

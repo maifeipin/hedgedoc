@@ -65,31 +65,31 @@ export const Welcome: React.FC = () => {
         {/* Stats Micro-Cards & Quick Actions */}
         <div className='d-flex flex-wrap align-items-center gap-2 ms-md-auto'>
           {/* Stat 1: Notes Count */}
-          <div className='d-flex align-items-center gap-2 bg-white dark:bg-neutral-800 border border-blue-100 dark:border-neutral-700 px-3 py-1.5 rounded-lg shadow-2xs'>
-            <span className='fs-5'>📝</span>
-            <div>
-              <div className='text-xs text-muted leading-tight'>笔记总数</div>
-              <div className='fw-bold text-primary small leading-tight'>{loading ? '-' : stats.totalNotes}</div>
+          <div className='d-flex align-items-center gap-2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md border border-blue-200/50 dark:border-neutral-700/50 px-3 py-1.5 rounded-lg shadow-2xs'>
+            <span className='text-lg leading-none'>📝</span>
+            <div className='d-flex flex-column justify-content-center'>
+              <div className='text-[10px] text-slate-500 dark:text-neutral-400 font-medium leading-tight'>笔记总数</div>
+              <div className='fw-bold text-primary dark:text-blue-400 text-sm leading-tight mt-0.5'>{loading ? '-' : stats.totalNotes}</div>
             </div>
           </div>
 
           {/* Stat 2: Folders Count */}
-          <div className='d-flex align-items-center gap-2 bg-white dark:bg-neutral-800 border border-emerald-100 dark:border-neutral-700 px-3 py-1.5 rounded-lg shadow-2xs'>
-            <span className='fs-5'>📁</span>
-            <div>
-              <div className='text-xs text-muted leading-tight'>分类目录</div>
-              <div className='fw-bold text-emerald-600 dark:text-emerald-400 small leading-tight'>
+          <div className='d-flex align-items-center gap-2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md border border-emerald-200/50 dark:border-neutral-700/50 px-3 py-1.5 rounded-lg shadow-2xs'>
+            <span className='text-lg leading-none'>📁</span>
+            <div className='d-flex flex-column justify-content-center'>
+              <div className='text-[10px] text-slate-500 dark:text-neutral-400 font-medium leading-tight'>分类目录</div>
+              <div className='fw-bold text-emerald-600 dark:text-emerald-400 text-sm leading-tight mt-0.5'>
                 {loading ? '-' : stats.totalFolders}
               </div>
             </div>
           </div>
 
           {/* Stat 3: Tags Count */}
-          <div className='d-flex align-items-center gap-2 bg-white dark:bg-neutral-800 border border-purple-100 dark:border-neutral-700 px-3 py-1.5 rounded-lg shadow-2xs'>
-            <span className='fs-5'>🏷️</span>
-            <div>
-              <div className='text-xs text-muted leading-tight'>标签总数</div>
-              <div className='fw-bold text-purple-600 dark:text-purple-400 small leading-tight'>
+          <div className='d-flex align-items-center gap-2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md border border-purple-200/50 dark:border-neutral-700/50 px-3 py-1.5 rounded-lg shadow-2xs'>
+            <span className='text-lg leading-none'>🏷️</span>
+            <div className='d-flex flex-column justify-content-center'>
+              <div className='text-[10px] text-slate-500 dark:text-neutral-400 font-medium leading-tight'>标签总数</div>
+              <div className='fw-bold text-purple-600 dark:text-purple-400 text-sm leading-tight mt-0.5'>
                 {loading ? '-' : stats.totalTags}
               </div>
             </div>

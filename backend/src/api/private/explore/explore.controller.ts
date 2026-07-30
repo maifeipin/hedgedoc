@@ -57,9 +57,19 @@ export class ExploreController {
     @Query('sort') sort?: OptionalSortMode,
     @Query('search') search?: string,
     @Query('type') type?: OptionalNoteType,
+    @Query('folderId') folderId?: string,
+    @Query('tag') tag?: string,
   ): Promise<NoteExploreEntryDto[]> {
     this.checkQueryParams(page, sort, type);
-    return this.exploreService.getMyNoteExploreEntries(userId, page, type, sort, search);
+    return this.exploreService.getMyNoteExploreEntries(
+      userId,
+      page,
+      type,
+      sort,
+      search,
+      folderId ? parseInt(folderId, 10) : undefined,
+      tag,
+    );
   }
 
   @Get('shared')

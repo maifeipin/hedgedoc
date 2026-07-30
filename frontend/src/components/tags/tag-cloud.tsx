@@ -5,6 +5,7 @@
  */
 'use client'
 import React, { useEffect, useState } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
 export interface TagItem {
   id: number
@@ -19,12 +20,19 @@ interface TagCloudProps {
 }
 
 export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  
+  const selectedTag = searchParams?.get('tag')
+
   const [tags, setTags] = useState<TagItem[]>([])
-  const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const [newTagName, setNewTagName] = useState<string>('')
   const [showTagForm, setShowTagForm] = useState<boolean>(false)
+  
   const [presetOpen, setPresetOpen] = useState<boolean>(true)
-  const [customOpen, setCustomOpen] = useState<boolean>(true)
+  const [activeOpen, setActiveOpen] = useState<boolean>(true)
+  const [unusedOpen, setUnusedOpen] = useState<boolean>(true)
 
   useEffect(() => {
     void fetchTags()
@@ -44,7 +52,15 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
 
   const handleTagClick = (name: string) => {
     const next = selectedTag === name ? null : name
-    setSelectedTag(next)
+    
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    if (next) {
+      params.set('tag', next)
+    } else {
+      params.delete('tag')
+    }
+    router.push(`${pathname}?${params.toString()}`)
+
     if (onSelectTag) {
       onSelectTag(next || '')
     }
@@ -69,8 +85,14 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
     }
   }
 
-  const systemTags = tags.filter((t) => t.isSystem)
-  const customTags = tags.filter((t) => !t.isSystem)
+  const handleDragStart = (e: React.DragEvent, tagName: string) => {
+    e.dataTransfer.setData('text/plain', `tag:${tagName}`)
+    e.dataTransfer.effectAllowed = 'copy'
+  }
+
+  const systemTags = tags.filter((t: TagItem) => t.isSystem)
+  const activeTags = tags.filter((t: TagItem) => !t.isSystem && t.count > 0)
+  const unusedTags = tags.filter((t: TagItem) => !t.isSystem && t.count === 0)
 
   const renderTagPill = (tag: TagItem) => {
     const isSelected = selectedTag === tag.name
@@ -78,13 +100,18 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
       <button
         key={tag.id}
         type='button'
+        draggable={true}
+        onDragStart={(e) => handleDragStart(e, tag.name)}
         onClick={() => handleTagClick(tag.name)}
-        className={`badge border-0 rounded-full px-2.5 py-1 text-xs cursor-pointer transition-all duration-150 hover:scale-105 ${
+        title='可拖拽打标签'
+        className={`badge border-0 rounded-full px-2.5 py-1 text-xs cursor-pointer transition-all duration-150 hover:scale-105 cursor-grab active:cursor-grabbing ${
           isSelected
             ? 'bg-primary text-white shadow-sm ring-2 ring-primary ring-offset-1 font-medium'
             : tag.isSystem
               ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 hover:bg-indigo-100'
-              : 'bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 border border-slate-200/80 dark:border-neutral-700 hover:bg-slate-200'
+              : tag.count === 0
+                ? 'bg-slate-50 dark:bg-neutral-800/50 text-slate-400 dark:text-neutral-500 border border-slate-200/50 dark:border-neutral-700/50 hover:bg-slate-100 hover:text-slate-600'
+                : 'bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 border border-slate-200/80 dark:border-neutral-700 hover:bg-slate-200'
         }`}>
         #{tag.name} {tag.count > 0 && <span className='opacity-75 ms-0.5 text-[10px]'>({tag.count})</span>}
       </button>
@@ -112,7 +139,7 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             placeholder='标签名称...'
-            className='form-control form-control-sm text-xs rounded-md'
+            className='form-control form-control-sm text-xs rounded-md dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700'
           />
           <button type='submit' className='btn btn-sm btn-success text-xs px-2 rounded-md'>
             添加
@@ -138,17 +165,31 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
             </div>
           )}
 
-          {/* Custom Tags Group */}
-          {customTags.length > 0 && (
+          {/* Active Extracted Tags Group */}
+          {activeTags.length > 0 && (
             <div className={systemTags.length > 0 ? 'pt-1 border-t border-slate-200/60 dark:border-neutral-800' : ''}>
               <button
                 type='button'
-                onClick={() => setCustomOpen(!customOpen)}
+                onClick={() => setActiveOpen(!activeOpen)}
                 className='w-full flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-neutral-400 mb-1.5 p-0 bg-transparent border-0 text-start cursor-pointer hover:text-slate-700'>
-                <span>🏷️ 自定义标签 ({customTags.length})</span>
-                <span className='text-[10px]'>{customOpen ? '▼' : '▶'}</span>
+                <span>🏷️ 使用中的标签 ({activeTags.length})</span>
+                <span className='text-[10px]'>{activeOpen ? '▼' : '▶'}</span>
               </button>
-              {customOpen && <div className='flex flex-wrap gap-1.5'>{customTags.map(renderTagPill)}</div>}
+              {activeOpen && <div className='flex flex-wrap gap-1.5'>{activeTags.map(renderTagPill)}</div>}
+            </div>
+          )}
+
+          {/* Unused Custom Tags Group */}
+          {unusedTags.length > 0 && (
+            <div className={systemTags.length > 0 || activeTags.length > 0 ? 'pt-1 border-t border-slate-200/60 dark:border-neutral-800' : ''}>
+              <button
+                type='button'
+                onClick={() => setUnusedOpen(!unusedOpen)}
+                className='w-full flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-neutral-400 mb-1.5 p-0 bg-transparent border-0 text-start cursor-pointer hover:text-slate-700'>
+                <span>📝 手动保存的标签 ({unusedTags.length})</span>
+                <span className='text-[10px]'>{unusedOpen ? '▼' : '▶'}</span>
+              </button>
+              {unusedOpen && <div className='flex flex-wrap gap-1.5'>{unusedTags.map(renderTagPill)}</div>}
             </div>
           )}
         </div>

@@ -3,35 +3,42 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { SessionGuard } from '../auth/session.guard';
+import { RequestUserId } from '../utils/decorators/request-user-id.decorator';
 
 import { TagsService } from './tags.service';
 
+@UseGuards(SessionGuard)
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Get()
-  async getAllTags() {
-    return await this.tagsService.getAllTagsWithCount();
+  async getAllTags(@RequestUserId() userId: number) {
+    return await this.tagsService.getAllTagsWithCount(userId);
   }
 
   @Post()
-  async createTag(@Body() body: { name: string; color?: string }) {
+  async createTag(@RequestUserId() userId: number, @Body() body: { name: string; color?: string }) {
     const name = body?.name || '';
     const color = body?.color;
-    return await this.tagsService.createTag(name, color);
+    return await this.tagsService.createTag(name, color, userId);
   }
 
   @Delete(':id')
-  async deleteTag(@Param('id', ParseIntPipe) id: number) {
-    await this.tagsService.deleteTag(id);
+  async deleteTag(@RequestUserId() userId: number, @Param('id', ParseIntPipe) id: number) {
+    await this.tagsService.deleteTag(id, userId);
     return { success: true };
   }
 
   @Post('note/:noteId')
-  async setNoteTags(@Param('noteId', ParseIntPipe) noteId: number, @Body('tags') tags: string[]) {
-    await this.tagsService.setNoteTags(noteId, tags || []);
+  async setNoteTags(
+    @RequestUserId() userId: number,
+    @Param('noteId', ParseIntPipe) noteId: number,
+    @Body('tags') tags: string[],
+  ) {
+    await this.tagsService.setNoteTags(noteId, tags || [], userId);
     return { success: true };
   }
 }

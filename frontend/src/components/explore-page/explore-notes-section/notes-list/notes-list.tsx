@@ -22,6 +22,8 @@ export interface NotesListProps {
   sort: SortMode
   searchFilter: string | null
   typeFilter: NoteType | null
+  folderId?: number
+  tagFilter?: string
 }
 
 /**
@@ -32,7 +34,7 @@ export interface NotesListProps {
  * @param searchFilter An optional search filter to apply, e.g. to filter for notes containing a specific string.
  * @param typeFilter An optional note type filter to apply, e.g. to show only documents or only slides.
  */
-export const NotesList: React.FC<NotesListProps> = ({ mode, sort, searchFilter, typeFilter }) => {
+export const NotesList: React.FC<NotesListProps> = ({ mode, sort, searchFilter, typeFilter, folderId, tagFilter }) => {
   const [entries, setEntries] = useState<NoteExploreEntryInterface[]>([])
   const { showErrorNotificationBuilder, dispatchUiNotification } = useUiNotifications()
   const [moreDataAvailable, setMoreDataAvailable] = useState(true)
@@ -42,9 +44,9 @@ export const NotesList: React.FC<NotesListProps> = ({ mode, sort, searchFilter, 
 
   const fetchNextPage = useCallback(
     (replaceOldEntries: boolean = false) => {
-      lastFilters.current = { mode, sort, searchFilter, typeFilter }
+      lastFilters.current = { mode, sort, searchFilter, typeFilter, folderId, tagFilter }
       lastPage.current += 1
-      getExplorePageEntries(mode, sort, searchFilter, typeFilter, lastPage.current)
+      getExplorePageEntries(mode, sort, searchFilter, typeFilter, lastPage.current, folderId, tagFilter)
         .then((data) => {
           if (data.length === 0) {
             setMoreDataAvailable(false)
@@ -71,7 +73,7 @@ export const NotesList: React.FC<NotesListProps> = ({ mode, sort, searchFilter, 
           showErrorNotificationBuilder('explore.errorLoadingEntries')(error as Error)
         })
     },
-    [mode, sort, searchFilter, typeFilter, showErrorNotificationBuilder, dispatchUiNotification]
+    [mode, sort, searchFilter, typeFilter, folderId, tagFilter, showErrorNotificationBuilder, dispatchUiNotification]
   )
 
   const updateExplorePage = useCallback(() => {
@@ -109,10 +111,10 @@ export const NotesList: React.FC<NotesListProps> = ({ mode, sort, searchFilter, 
 
   // Reset page when filters change
   useEffect(() => {
-    if (!equal(lastFilters.current, { mode, sort, searchFilter, typeFilter })) {
+    if (!equal(lastFilters.current, { mode, sort, searchFilter, typeFilter, folderId, tagFilter })) {
       updateExplorePage()
     }
-  }, [updateExplorePage, mode, sort, searchFilter, typeFilter])
+  }, [updateExplorePage, mode, sort, searchFilter, typeFilter, folderId, tagFilter])
 
   return (
     <InfiniteScroll

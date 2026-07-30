@@ -32,6 +32,8 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
     mode === Mode.VISITED ? SortMode.LAST_VISITED_DESC : SortMode.UPDATED_AT_DESC
   )
   const [filterByType, setFilterByType] = useUrlParamState<NoteType | null>('type', null)
+  const [folderIdString, setFolderIdString] = useUrlParamState<string | null>('folderId', null)
+  const [tagFilter, setTagFilter] = useUrlParamState<string | null>('tag', null)
   const previousMode = useRef<Mode>(mode)
 
   // Reset filters when mode/page changes
@@ -40,9 +42,11 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
       setSearchFilter(null)
       setSortMode(mode === Mode.VISITED ? SortMode.LAST_VISITED_DESC : SortMode.UPDATED_AT_DESC)
       setFilterByType(null)
+      setFolderIdString(null)
+      setTagFilter(null)
       previousMode.current = mode
     }
-  }, [mode, setFilterByType, setSearchFilter, setSortMode])
+  }, [mode, setFilterByType, setSearchFilter, setSortMode, setFolderIdString, setTagFilter])
 
   return (
     <Fragment>
@@ -54,7 +58,14 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
           <SortButton selected={sortMode} onChange={setSortMode} showLastVisitedOptions={mode === Mode.VISITED} />
         </search>
       </div>
-      <NotesList mode={mode} sort={sortMode} searchFilter={searchFilter} typeFilter={filterByType} />
+      <NotesList 
+        mode={mode} 
+        sort={sortMode} 
+        searchFilter={searchFilter} 
+        typeFilter={filterByType} 
+        folderId={folderIdString ? parseInt(folderIdString, 10) : undefined}
+        tagFilter={tagFilter || undefined}
+      />
     </Fragment>
   )
 }

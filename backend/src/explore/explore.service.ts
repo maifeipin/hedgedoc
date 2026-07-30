@@ -88,6 +88,8 @@ export class ExploreService {
     noteType?: NoteType | '',
     sortBy?: OptionalSortMode,
     search?: string,
+    folderId?: number,
+    tagName?: string,
   ): Promise<NoteExploreEntryDto[]> {
     return await this.knex.transaction(async (transaction) => {
       const queryBase = transaction(TableNote);
@@ -96,7 +98,7 @@ export class ExploreService {
         query = this.joinWithTableVisitedNote(query);
       }
       query = query.andWhere(`${TableNote}.${FieldNameNote.ownerId}`, userId);
-      query = this.applyFiltersToQuery(query, noteType, search);
+      query = this.applyFiltersToQuery(query, noteType, search, folderId, tagName);
       query = this.applySortingToQuery(query, sortBy);
       query = this.applyPaginationToQuery(query, page);
       const results = (await query) as QueryResult[];
@@ -401,6 +403,8 @@ export class ExploreService {
     query: T,
     noteType?: NoteType | '',
     search?: string,
+    folderId?: number,
+    tagName?: string,
   ): T {
     let filteredQuery = query;
     if (noteType) {
@@ -415,6 +419,15 @@ export class ExploreService {
         `${TableRevision}.${FieldNameRevision.title}`,
         `%${searchLowercase}%`,
       ]) as T;
+    }
+    if (folderId !== undefined) {
+      filteredQuery = filteredQuery.andWhere(`${TableNote}.${FieldNameNote.folderId}`, folderId) as T;
+    }
+    if (tagName) {
+      filteredQuery = filteredQuery
+        .join(TableNoteTag, `${TableNoteTag}.noteId`, `${TableNote}.id`)
+        .join(TableTag, `${TableTag}.id`, `${TableNoteTag}.tagId`)
+        .andWhere(`${TableTag}.name`, tagName) as T;
     }
     return filteredQuery;
   }

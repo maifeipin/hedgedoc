@@ -21,6 +21,7 @@ import type { NoteExploreEntryInterface } from '@hedgedoc/commons'
 import { useTranslatedText } from '../../../../hooks/common/use-translated-text'
 import { Trans, useTranslation } from 'react-i18next'
 import { PinNoteMenuEntry } from './pin-note-menu-entry'
+import { SetTagsModal } from '../../../tags/set-tags-modal'
 import styles from './note-entry.module.css'
 
 interface NoteListEntryProps extends NoteExploreEntryInterface {
@@ -59,6 +60,7 @@ export const NoteListEntry: React.FC<NoteListEntryProps> = ({
   const { showErrorNotificationBuilder } = useUiNotifications()
   const currentUser = useApplicationState((state) => state.user)
   const fallbackUntitled = useTranslatedText('editor.untitledNote')
+  const [showTagModal, setShowTagModal] = React.useState(false)
   const onClickDeleteNote = useCallback(
     (keepMedia: boolean) => {
       deleteNote(primaryAlias, keepMedia)
@@ -89,13 +91,58 @@ export const NoteListEntry: React.FC<NoteListEntryProps> = ({
     [primaryAlias]
   )
 
+  const [isDragOver, setIsDragOver] = React.useState(false)
+
+  const handleDragOver = (e: React.DragEvent) => {
+    // Only accept drag if it has a tag: prefix or plain text
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragOver(false)
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    const data = e.dataTransfer.getData('text/plain')
+    if (data && data.startsWith('tag:')) {
+      const tagName = data.substring(4)
+      // Check if tag is already present
+      if (tags.includes(tagName)) return
+      
+      try {
+        const newTags = [...tags, tagName]
+        const res = await fetch(`/api/v2/tags/note/${primaryAlias}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tags: newTags })
+        })
+        if (res.ok) {
+          updateExplorePage()
+        } else {
+          const err = await res.json()
+          showErrorNotificationBuilder('添加标签失败: ' + (err.message || '未知错误'))(new Error('Tagging failed'))
+        }
+      } catch (err) {
+        showErrorNotificationBuilder('添加标签失败')(err as Error)
+      }
+    }
+  }
+
   return (
     <div
       draggable
       onDragStart={handleDragStart}
-      className={
-        'border-top border-bottom py-3 d-flex align-items-center cursor-grab active:cursor-grabbing hover:bg-slate-50 dark:hover:bg-neutral-800/50 rounded px-2 transition-all user-select-none'
-      }>
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`border-top border-bottom py-3 d-flex align-items-center cursor-grab active:cursor-grabbing rounded px-2 transition-all user-select-none ${
+        isDragOver
+          ? 'bg-blue-50/50 dark:bg-blue-900/30 border-blue-400 border-dashed border-2 shadow-sm'
+          : 'hover:bg-slate-50 dark:hover:bg-neutral-800/50'
+      }`}>
       <span className={'mx-2'}>
         <Link href={`/n/${primaryAlias}`}>
           <NoteTypeIcon noteType={type} size={3} />
@@ -120,6 +167,10 @@ export const NoteListEntry: React.FC<NoteListEntryProps> = ({
           <UiIcon icon={IconThreeDotsVertical} />
         </Dropdown.Toggle>
         <Dropdown.Menu>
+          <Dropdown.Item onClick={() => setShowTagModal(true)}>
+            <UiIcon icon={() => <span>🏷️</span>} className={'me-2'} />
+            设置标签
+          </Dropdown.Item>
           <DeleteNoteMenuEntry
             noteTitle={title}
             isOwner={owner !== null && currentUser?.username === owner}
@@ -128,6 +179,14 @@ export const NoteListEntry: React.FC<NoteListEntryProps> = ({
           <PinNoteMenuEntry noteAlias={primaryAlias} isPinned={isPinned} />
         </Dropdown.Menu>
       </Dropdown>
+
+      <SetTagsModal
+        show={showTagModal}
+        onHide={() => setShowTagModal(false)}
+        noteAlias={primaryAlias}
+        currentTags={tags}
+        onSuccess={updateExplorePage}
+      />
     </div>
   )
 }

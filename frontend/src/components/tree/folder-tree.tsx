@@ -5,6 +5,7 @@
  */
 'use client'
 import React, { useState, useEffect } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
 export interface FolderNode {
   id: number
@@ -22,9 +23,15 @@ interface FolderTreeProps {
 }
 
 export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImportMD, onNoteMoved }) => {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  
+  const selectedFolderIdParam = searchParams?.get('folderId')
+  const selectedFolderId = selectedFolderIdParam ? parseInt(selectedFolderIdParam, 10) : null
+
   const [treeData, setTreeData] = useState<FolderNode[]>([])
   const [expanded, setExpanded] = useState<Record<number, boolean>>({})
-  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
   // Modal / Form state
@@ -68,7 +75,15 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
 
   const handleSelect = (folderId: number) => {
     const newId = selectedFolderId === folderId ? null : folderId
-    setSelectedFolderId(newId)
+    
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    if (newId) {
+      params.set('folderId', newId.toString())
+    } else {
+      params.delete('folderId')
+    }
+    router.push(`${pathname}?${params.toString()}`)
+
     if (onSelectFolder) {
       onSelectFolder(newId)
     }
@@ -111,7 +126,11 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     try {
       const res = await fetch(`/api/v2/folders/${id}`, { method: 'DELETE' })
       if (res.ok) {
-        if (selectedFolderId === id) setSelectedFolderId(null)
+        if (selectedFolderId === id) {
+          const params = new URLSearchParams(searchParams?.toString() || '')
+          params.delete('folderId')
+          router.push(`${pathname}?${params.toString()}`)
+        }
         await fetchTree()
       } else {
         const errorData = await res.json()
@@ -314,7 +333,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               id='parent-folder-select'
               value={selectedParentId || ''}
               onChange={(e) => setSelectedParentId(e.target.value ? parseInt(e.target.value, 10) : null)}
-              className='form-select form-select-sm text-xs rounded-md'>
+              className='form-select form-select-sm text-xs rounded-md dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700'>
               <option value=''>(无 - 作为顶级根目录)</option>
               {getAllFolderOptions(treeData).map((opt) => (
                 <option key={opt.id} value={opt.id}>
@@ -329,7 +348,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder='输入文件夹名称...'
-              className='form-control form-control-sm text-xs rounded-md'
+              className='form-control form-control-sm text-xs rounded-md dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700'
               required
             />
           </div>

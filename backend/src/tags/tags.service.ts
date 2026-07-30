@@ -3,8 +3,8 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { FieldNameNoteTag, FieldNameTag, TableNoteTag, TableTag } from '@hedgedoc/database';
-import { Injectable } from '@nestjs/common';
+import { FieldNameNoteTag, FieldNameTag, TableNoteTag, TableTag, TableNote, FieldNameNote } from '@hedgedoc/database';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Knex } from 'knex';
 import { InjectConnection } from 'nest-knexjs';
 
@@ -28,7 +28,7 @@ export class TagsService {
   /**
    * 获取所有标签及包含的笔记数量与系统内置标识
    */
-  async getAllTagsWithCount(): Promise<TagWithCount[]> {
+  async getAllTagsWithCount(userId: number): Promise<TagWithCount[]> {
     const totalCount = await this.knex(TableTag).count<{ count: string }>('id as count').first();
     if (!totalCount || parseInt(totalCount.count, 10) === 0) {
       const presetTags = [
@@ -49,9 +49,13 @@ export class TagsService {
         `${TableTag}.id`,
         `${TableTag}.name`,
         `${TableTag}.color`,
-        this.knex.raw('COUNT("note_tags"."noteId")::int as count'),
+        this.knex.raw(`COUNT(CASE WHEN "${TableNote}"."${FieldNameNote.ownerId}" = ? THEN "${TableNoteTag}"."noteId" END)::int as count`, [userId])
       )
       .leftJoin(TableNoteTag, `${TableTag}.id`, `${TableNoteTag}.tagId`)
+      .leftJoin(TableNote, `${TableNoteTag}.noteId`, `${TableNote}.id`)
+      .whereIn(`${TableTag}.name`, Array.from(PRESET_TAG_NAMES))
+      .orWhere(`${TableNote}.${FieldNameNote.ownerId}`, userId)
+      .orWhere(`${TableTag}.creatorId`, userId)
       .groupBy(`${TableTag}.id`, `${TableTag}.name`, `${TableTag}.color`)
       .orderBy('count', 'desc');
 
@@ -65,7 +69,7 @@ export class TagsService {
   /**
    * 创建独立标签
    */
-  async createTag(name: string, color?: string): Promise<TagWithCount> {
+  async createTag(name: string, color: string | undefined, userId: number): Promise<TagWithCount> {
     const cleanName = name.trim().toLowerCase();
     const existing = await this.knex(TableTag).where(FieldNameTag.name, cleanName).first();
     if (existing) {
@@ -76,10 +80,11 @@ export class TagsService {
       {
         [FieldNameTag.name]: cleanName,
         color: color || '#3b82f6',
+        creatorId: userId,
       },
       ['*'],
     );
-    return { ...inserted, count: 0 };
+    return { ...inserted, count: 0, isSystem: PRESET_TAG_NAMES.has(cleanName) };
   }
 
   /**

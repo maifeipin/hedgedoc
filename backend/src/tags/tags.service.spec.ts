@@ -40,9 +40,9 @@ describe('TagsService', () => {
         [FieldNameTag.color]: '#3b82f6',
         createdAt: '2026-07-29 00:00:00',
       };
-      mockInsert(tracker, TableTag, [FieldNameTag.color, FieldNameTag.name], [insertedRow]);
+      mockInsert(tracker, TableTag, [FieldNameTag.color, 'creatorId', FieldNameTag.name], [insertedRow]);
 
-      const result = await service.createTag('Important', '#3b82f6');
+      const result = await service.createTag('Important', '#3b82f6', 1);
       expect(result.id).toBe(7);
       expect(result.name).toBe('important');
       expect(result.color).toBe('#3b82f6');
@@ -58,7 +58,7 @@ describe('TagsService', () => {
       };
       mockSelect(tracker, [], TableTag, FieldNameTag.name, [existing]);
 
-      const result = await service.createTag('Work');
+      const result = await service.createTag('Work', undefined, 1);
       expect(result.id).toBe(3);
       expect(result.name).toBe('work');
       expect(result.count).toBe(0);

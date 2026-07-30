@@ -15,6 +15,9 @@ import {
 } from '@nestjs/common';
 import { SessionGuard } from '../auth/session.guard';
 import { RequestUserId } from '../api/utils/decorators/request-user-id.decorator';
+import { RequestNoteId } from '../api/utils/decorators/request-note-id.decorator';
+import { GetNoteIdInterceptor } from '../api/utils/interceptors/get-note-id.interceptor';
+import { UseInterceptors } from '@nestjs/common';
 
 import { TagsService } from './tags.service';
 
@@ -41,10 +44,11 @@ export class TagsController {
     return { success: true };
   }
 
-  @Post('note/:noteId')
+  @Post('note/:noteAlias')
+  @UseInterceptors(GetNoteIdInterceptor)
   async setNoteTags(
     @RequestUserId() userId: number,
-    @Param('noteId', ParseIntPipe) noteId: number,
+    @RequestNoteId() noteId: number,
     @Body('tags') tags: string[],
   ) {
     await this.tagsService.setNoteTags(noteId, tags || [], userId);

@@ -120,14 +120,14 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
 
   return (
     <div className='p-3 bg-slate-50/80 dark:bg-neutral-900/80 rounded-xl border border-slate-200/60 dark:border-neutral-800 flex flex-col gap-2'>
-      <div className='flex items-center justify-between pb-1.5 border-b border-slate-200 dark:border-neutral-800'>
-        <h3 className='font-bold text-slate-700 dark:text-neutral-200 text-xs tracking-wide m-0 d-flex align-items-center gap-1'>
-          <span>🏷️ 标签分类</span>
+      <div className='flex items-center justify-between pb-3 mb-2 border-b border-slate-200 dark:border-neutral-800'>
+        <h3 className='font-bold text-slate-800 dark:text-neutral-100 text-[1.25rem] m-0 d-flex align-items-center'>
+          标签分类
         </h3>
         <button
           type='button'
           onClick={() => setShowTagForm(!showTagForm)}
-          className='btn btn-sm btn-outline-secondary py-0 px-1.5 text-xs rounded-md'>
+          className='btn btn-sm btn-light py-0.5 px-2 text-xs rounded-md border-slate-200 dark:border-neutral-700'>
           + 标签
         </button>
       </div>

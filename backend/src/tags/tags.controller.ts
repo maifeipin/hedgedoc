@@ -5,7 +5,7 @@
  */
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { SessionGuard } from '../auth/session.guard';
-import { RequestUserId } from '../utils/decorators/request-user-id.decorator';
+import { RequestUserId } from '../api/utils/decorators/request-user-id.decorator';
 
 import { TagsService } from './tags.service';
 

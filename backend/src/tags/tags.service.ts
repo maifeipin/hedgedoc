@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 import { FieldNameNoteTag, FieldNameTag, TableNoteTag, TableTag, TableNote, FieldNameNote } from '@hedgedoc/database';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
 import { InjectConnection } from 'nest-knexjs';
 
@@ -90,14 +90,14 @@ export class TagsService {
   /**
    * 删除指定标签及映射关系
    */
-  async deleteTag(id: number): Promise<void> {
+  async deleteTag(id: number, userId: number): Promise<void> {
     await this.knex(TableTag).where('id', id).del();
   }
 
   /**
    * 为笔记增量设置标签 (解析 #tag 或 yaml 标签后刷入)
    */
-  async setNoteTags(noteId: number, tagNames: string[]): Promise<void> {
+  async setNoteTags(noteId: number, tagNames: string[], userId: number): Promise<void> {
     const cleanNames = Array.from(
       new Set(tagNames.map((t) => t.trim().toLowerCase()).filter(Boolean)),
     );

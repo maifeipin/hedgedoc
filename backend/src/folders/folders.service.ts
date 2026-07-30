@@ -148,7 +148,9 @@ export class FoldersService {
 
   async deleteFolder(id: number, userId: number): Promise<void> {
     // 校验 1: 是否有下级子文件夹
-    const subFolder = await this.knex(TableFolder).where({ [FieldNameFolder.parentId]: id, [FieldNameFolder.ownerId]: userId }).first();
+    const subFolder = await this.knex(TableFolder)
+      .where({ [FieldNameFolder.parentId]: id, [FieldNameFolder.ownerId]: userId })
+      .first();
     if (subFolder) {
       throw new BadRequestException('该目录包含子文件夹，请先清空子文件夹后再删除');
     }

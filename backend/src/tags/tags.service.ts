@@ -90,14 +90,14 @@ export class TagsService {
   /**
    * 删除指定标签及映射关系
    */
-  async deleteTag(id: number, userId: number): Promise<void> {
+  async deleteTag(id: number, _: number): Promise<void> {
     await this.knex(TableTag).where('id', id).del();
   }
 
   /**
    * 为笔记增量设置标签 (解析 #tag 或 yaml 标签后刷入)
    */
-  async setNoteTags(noteId: number, tagNames: string[], userId: number): Promise<void> {
+  async setNoteTags(noteId: number, tagNames: string[], _: number): Promise<void> {
     const cleanNames = Array.from(
       new Set(tagNames.map((t) => t.trim().toLowerCase()).filter(Boolean)),
     );

@@ -68,7 +68,7 @@ describe('TagsService', () => {
   describe('deleteTag', () => {
     it('deletes the tag with the given id', async () => {
       mockDelete(tracker, TableTag, [FieldNameTag.id], 1);
-      await expect(service.deleteTag(5)).resolves.toBeUndefined();
+      await expect(service.deleteTag(5, 1)).resolves.toBeUndefined();
     });
   });
 });

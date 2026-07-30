@@ -95,7 +95,19 @@ export const NotesList: React.FC<NotesListProps> = ({ mode, sort, searchFilter, 
     })
   }, [entries, mode, pinnedNotes, updateExplorePage])
 
-  // Update entries when filters change
+  useEffect(() => {
+    const handleNoteMoved = () => {
+      lastPage.current = 0
+      setMoreDataAvailable(true)
+      fetchNextPage(true)
+    }
+    window.addEventListener('hedgedoc:note-moved', handleNoteMoved)
+    return () => {
+      window.removeEventListener('hedgedoc:note-moved', handleNoteMoved)
+    }
+  }, [fetchNextPage])
+
+  // Reset page when filters change
   useEffect(() => {
     if (!equal(lastFilters.current, { mode, sort, searchFilter, typeFilter })) {
       updateExplorePage()

@@ -9,6 +9,20 @@ import { createURLSearchParams } from './utils'
 import { Mode } from '../../components/explore-page/mode-selection/mode'
 import { PutApiRequestBuilder } from '../common/api-request-builder/put-api-request-builder'
 
+export interface ExploreStatsInterface {
+  totalNotes: number
+  totalFolders: number
+  totalTags: number
+}
+
+/**
+ * Fetches aggregate statistics for the explore page dashboard
+ */
+export const getExploreStats = async (): Promise<ExploreStatsInterface> => {
+  const response = await new GetApiRequestBuilder<ExploreStatsInterface>('explore/stats').sendRequest()
+  return response.asParsedJsonObject()
+}
+
 /**
  * Fetches the pinned notes of a user
  *

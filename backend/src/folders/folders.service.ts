@@ -78,11 +78,24 @@ export class FoldersService {
       .where(FieldNameFolder.ownerId, userId)
       .orderBy(FieldNameFolder.sortOrder, 'asc');
 
+    const noteCountsRaw = await (this.knex('note') as any)
+      .where('owner_id', userId)
+      .whereNotNull('folder_id')
+      .select('folder_id')
+      .count('id as count')
+      .groupBy('folder_id');
+
+    const directCountsMap = new Map<number, number>();
+    (noteCountsRaw as Array<{ folder_id: number; count: string | number }>).forEach((row) => {
+      directCountsMap.set(Number(row.folder_id), parseInt(String(row.count), 10));
+    });
+
     const folderMap = new Map<number, FolderNode>();
     const roots: FolderNode[] = [];
 
     folders.forEach((f) => {
-      folderMap.set(f.id, { ...f, children: [] });
+      const direct = directCountsMap.get(f.id) || 0;
+      folderMap.set(f.id, { ...f, notesCount: direct, children: [] });
     });
 
     folders.forEach((f) => {
@@ -93,6 +106,19 @@ export class FoldersService {
         roots.push(node);
       }
     });
+
+    const calculateTotalNotesCount = (node: FolderNode): number => {
+      let total = node.notesCount || 0;
+      if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+          total += calculateTotalNotesCount(child);
+        }
+      }
+      node.notesCount = total;
+      return total;
+    };
+
+    roots.forEach((root) => calculateTotalNotesCount(root));
 
     return roots;
   }
@@ -138,9 +164,27 @@ export class FoldersService {
     await this.knex(TableFolder).where({ id, ownerId: userId }).del();
   }
 
-  async moveNoteToFolder(noteId: number, folderId: number, userId: number): Promise<void> {
+  async moveNoteToFolder(
+    noteIdentifier: string | number,
+    folderId: number,
+    userId: number,
+  ): Promise<void> {
+    let targetNoteId =
+      typeof noteIdentifier === 'number' ? noteIdentifier : parseInt(noteIdentifier, 10);
+    if (isNaN(targetNoteId)) {
+      const aliasRow = await (this.knex('alias') as any)
+        .where({ alias: String(noteIdentifier) })
+        .first();
+      if (aliasRow) {
+        targetNoteId = aliasRow.note_id;
+      }
+    }
+    if (!targetNoteId) {
+      throw new BadRequestException(`无法找到标识符为 '${noteIdentifier}' 的 Markdown 笔记`);
+    }
+
     await (this.knex('note') as any)
-      .where({ id: noteId, owner_id: userId })
+      .where({ id: targetNoteId, owner_id: userId })
       .update({ folder_id: folderId });
   }
 }

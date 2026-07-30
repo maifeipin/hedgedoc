@@ -11,15 +11,17 @@ export interface FolderNode {
   name: string
   isSystem?: boolean
   parentId?: number
+  notesCount?: number
   children?: FolderNode[]
 }
 
 interface FolderTreeProps {
   onSelectFolder?: (folderId: number | null) => void
   onImportMD?: () => void
+  onNoteMoved?: () => void
 }
 
-export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImportMD }) => {
+export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImportMD, onNoteMoved }) => {
   const [treeData, setTreeData] = useState<FolderNode[]>([])
   const [expanded, setExpanded] = useState<Record<number, boolean>>({})
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null)
@@ -134,18 +136,17 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     e.preventDefault()
     setDraggedOverId(null)
     const noteIdStr = e.dataTransfer.getData('text/plain')
-    const noteId = parseInt(noteIdStr, 10)
-    if (!noteId) return
+    if (!noteIdStr) return
 
     try {
       const res = await fetch('/api/v2/folders/move-note', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ noteId, folderId: targetFolderId })
+        body: JSON.stringify({ noteId: noteIdStr, folderId: targetFolderId })
       })
       if (res.ok) {
-        alert('笔记成功移动至新目录！')
         await fetchTree()
+        if (onNoteMoved) onNoteMoved()
       }
     } catch (err) {
       console.error('Failed to move note to folder', err)
@@ -176,10 +177,9 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     if (cleanName.startsWith('📂')) cleanName = cleanName.replace('📂', '').trim()
 
     const iconPrefix = node.isSystem ? '📥' : isExpanded ? '📂' : '📁'
-    const folderLabel = `${iconPrefix} ${cleanName}`
 
     return (
-      <div key={node.id} className='select-none text-xs'>
+      <div key={node.id} className='select-none text-xs group'>
         <div
           role='treeitem'
           aria-selected={isSelected}
@@ -193,26 +193,38 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               handleSelect(node.id)
             }
           }}
-          className={`w-full flex items-center justify-between py-1.5 px-2 rounded cursor-pointer transition-all ${
+          className={`w-full flex items-center justify-between py-1.5 px-2 rounded-md cursor-pointer transition-all ${
             isSelected
               ? 'bg-primary text-white font-medium shadow-sm'
               : isOver
-                ? 'bg-primary-subtle ring-2 ring-primary'
-                : 'hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200'
+                ? 'bg-blue-100 dark:bg-blue-900/50 ring-2 ring-primary shadow-sm'
+                : 'hover:bg-slate-200/70 dark:hover:bg-neutral-800 text-slate-700 dark:text-neutral-200'
           } ${level > 0 ? 'ms-3' : ''}`}>
-          <div className='flex items-center gap-1.5 min-w-0 flex-1'>
+          <div className='flex items-center gap-1.5 min-w-0 flex-1 me-1'>
             <button
               type='button'
               onClick={(e) => toggleExpand(node.id, e)}
-              className={`p-0 border-0 bg-transparent text-xs ${isSelected ? 'text-white' : 'text-neutral-400'} ${
+              className={`p-0 border-0 bg-transparent text-xs ${isSelected ? 'text-white' : 'text-slate-400'} ${
                 !hasChildren ? 'invisible' : ''
               }`}>
               {isExpanded ? '▼' : '▶'}
             </button>
-            <span className='truncate'>{folderLabel}</span>
+            <span className='me-1'>{iconPrefix}</span>
+            <span className='truncate font-normal'>{cleanName}</span>
+            {node.notesCount !== undefined && node.notesCount > 0 && (
+              <span
+                className={`text-[10px] font-normal px-1.5 py-0.5 rounded-full ms-1 transition-all ${
+                  isSelected
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200/80 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400'
+                }`}>
+                {node.notesCount}
+              </span>
+            )}
           </div>
 
-          <div className='flex items-center gap-1 opacity-80 hover:opacity-100 ms-1'>
+          {/* Hover Action Bar */}
+          <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity me-0.5'>
             {!node.isSystem && (
               <button
                 type='button'
@@ -220,7 +232,9 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
                   e.stopPropagation()
                   openAddForm(node.id)
                 }}
-                className={`p-0 border-0 bg-transparent text-xs ${isSelected ? 'text-white' : 'text-primary'}`}
+                className={`px-1 py-0.5 border-0 rounded text-[11px] ${
+                  isSelected ? 'text-white hover:bg-white/20' : 'text-primary hover:bg-primary/10'
+                }`}
                 title='在该目录下新建子目录'>
                 +子项
               </button>
@@ -229,8 +243,10 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               <button
                 type='button'
                 onClick={(e) => handleDeleteFolder(node.id, e)}
-                className={`p-0 border-0 bg-transparent text-xs ms-1 ${
-                  isSelected ? 'text-white' : 'text-neutral-400 hover:text-red-500'
+                className={`px-1 py-0.5 border-0 rounded text-[11px] transition-colors ${
+                  isSelected
+                    ? 'text-white/80 hover:text-white hover:bg-red-500/40'
+                    : 'text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30'
                 }`}
                 title='删除目录'>
                 ✕
@@ -240,7 +256,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
         </div>
 
         {isExpanded && hasChildren && (
-          <div className='ps-2 border-start border-neutral-200 dark:border-neutral-700 ms-3 my-0.5'>
+          <div className='ps-2 border-start border-slate-200 dark:border-neutral-700 ms-3 my-0.5 space-y-0.5'>
             {node.children!.map((child) => renderNode(child, level + 1))}
           </div>
         )}
@@ -249,15 +265,17 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
   }
 
   return (
-    <div className='w-full flex flex-col bg-neutral-50 dark:bg-neutral-900 p-2.5 rounded'>
+    <div className='w-full flex flex-col bg-slate-50/80 dark:bg-neutral-900/80 p-2.5 rounded-xl border border-slate-200/60 dark:border-neutral-800'>
       {/* Header controls */}
-      <div className='flex items-center justify-between pb-2 mb-2 border-bottom border-neutral-200 dark:border-neutral-800'>
-        <h2 className='font-bold text-neutral-700 dark:text-neutral-200 text-xs tracking-wide m-0'>📖 目录与工作台</h2>
+      <div className='flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-neutral-800'>
+        <h2 className='font-bold text-slate-700 dark:text-neutral-200 text-xs tracking-wide m-0 d-flex align-items-center gap-1'>
+          <span>📖 目录与工作台</span>
+        </h2>
         <div className='flex items-center gap-1'>
           <button
             type='button'
             onClick={() => openAddForm(null)}
-            className='btn btn-sm btn-outline-primary py-0 px-1.5 text-xs'
+            className='btn btn-sm btn-outline-primary py-0 px-1.5 text-xs rounded-md'
             title='新建顶级根目录'>
             + 根目录
           </button>
@@ -265,7 +283,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
             <button
               type='button'
               onClick={() => openAddForm(selectedFolderId)}
-              className='btn btn-sm btn-primary py-0 px-1.5 text-xs'
+              className='btn btn-sm btn-primary py-0 px-1.5 text-xs rounded-md'
               title='在选中目录下创建子目录'>
               + 子目录
             </button>
@@ -274,7 +292,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
             <button
               type='button'
               onClick={onImportMD}
-              className='btn btn-sm btn-secondary py-0 px-1.5 text-xs'
+              className='btn btn-sm btn-secondary py-0 px-1.5 text-xs rounded-md'
               title='导入 Markdown 文件'>
               导入
             </button>
@@ -286,17 +304,17 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
       {showAddForm && (
         <form
           onSubmit={handleCreateFolder}
-          className='mb-3 p-2 bg-white dark:bg-neutral-800 border rounded shadow-sm flex flex-col gap-2'>
-          <div className='text-xs font-semibold text-neutral-600 dark:text-neutral-300'>新建文件夹</div>
+          className='mb-3 p-2 bg-white dark:bg-neutral-800 border rounded-lg shadow-sm flex flex-col gap-2'>
+          <div className='text-xs font-semibold text-slate-700 dark:text-neutral-300'>新建文件夹</div>
           <div>
-            <label htmlFor='parent-folder-select' className='text-xs text-neutral-500 mb-1 block'>
+            <label htmlFor='parent-folder-select' className='text-xs text-slate-500 mb-1 block'>
               选择上级目录：
             </label>
             <select
               id='parent-folder-select'
               value={selectedParentId || ''}
               onChange={(e) => setSelectedParentId(e.target.value ? parseInt(e.target.value, 10) : null)}
-              className='form-select form-select-sm text-xs'>
+              className='form-select form-select-sm text-xs rounded-md'>
               <option value=''>(无 - 作为顶级根目录)</option>
               {getAllFolderOptions(treeData).map((opt) => (
                 <option key={opt.id} value={opt.id}>
@@ -311,7 +329,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder='输入文件夹名称...'
-              className='form-control form-control-sm text-xs'
+              className='form-control form-control-sm text-xs rounded-md'
               required
             />
           </div>
@@ -319,22 +337,22 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
             <button
               type='button'
               onClick={() => setShowAddForm(false)}
-              className='btn btn-sm btn-light text-xs py-0 px-2'>
+              className='btn btn-sm btn-light text-xs py-0.5 px-2 rounded-md'>
               取消
             </button>
-            <button type='submit' className='btn btn-sm btn-success text-xs py-0 px-2'>
-              确定保存
+            <button type='submit' className='btn btn-sm btn-success text-xs py-0.5 px-2 rounded-md'>
+              保存
             </button>
           </div>
         </form>
       )}
 
-      {/* Folder Tree List */}
-      <div className='flex-1 overflow-y-auto space-y-1'>
+      {/* Folder Tree List (No inner overflow-y-auto to prevent double scrollbars) */}
+      <div className='space-y-0.5'>
         {loading ? (
-          <div className='text-xs text-neutral-400 p-2'>加载目录中...</div>
+          <div className='text-xs text-slate-400 p-2'>加载目录中...</div>
         ) : treeData.length === 0 ? (
-          <div className='text-xs text-neutral-400 p-2'>暂无目录</div>
+          <div className='text-xs text-slate-400 p-2'>暂无目录</div>
         ) : (
           treeData.map((node) => renderNode(node))
         )}

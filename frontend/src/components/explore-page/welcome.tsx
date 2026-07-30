@@ -1,26 +1,104 @@
-/*
- * SPDX-FileCopyrightText: 2025 The HedgeDoc developers (see AUTHORS file)
- *
- * SPDX-License-Identifier: AGPL-3.0-only
- */
-import React from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useApplicationState } from '../../hooks/common/use-application-state'
+import { createNote } from '../../api/notes'
+import { getExploreStats, type ExploreStatsInterface } from '../../api/explore'
+import { useRouter } from 'next/navigation'
+import { useUiNotifications } from '../notifications/ui-notification-boundary'
 import { Trans, useTranslation } from 'react-i18next'
 
 /**
- * Renders the welcome message for the explore page.
+ * Renders a glassmorphic dashboard header for the explore page.
  */
 export const Welcome: React.FC = () => {
   useTranslation()
-  const userName = useApplicationState((state) => state.user?.displayName)
+  const userName = useApplicationState((state) => state.user?.displayName || state.user?.username || '用户')
+  const [stats, setStats] = useState<ExploreStatsInterface>({ totalNotes: 0, totalFolders: 0, totalTags: 0 })
+  const [loading, setLoading] = useState<boolean>(true)
+  const router = useRouter()
+  const { showErrorNotificationBuilder } = useUiNotifications()
+
+  useEffect(() => {
+    let isMounted = true
+    getExploreStats()
+      .then((data) => {
+        if (isMounted) {
+          setStats(data)
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const handleCreateNewNote = useCallback(() => {
+    createNote('')
+      .then((note) => {
+        router?.push(`/n/${note.metadata.primaryAlias}`)
+      })
+      .catch((err: Error) => {
+        showErrorNotificationBuilder(err.message)
+      })
+  }, [router, showErrorNotificationBuilder])
 
   return (
-    <h1 className={'my-4'}>
-      {userName !== undefined ? (
-        <Trans i18nKey={'explore.welcome.user'} values={{ userName }} />
-      ) : (
-        <Trans i18nKey={'explore.welcome.guest'} />
-      )}
-    </h1>
+    <div className='bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-purple-50/70 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 border border-slate-200/80 dark:border-neutral-700/60 rounded-xl p-4 mb-4 shadow-sm backdrop-blur-sm transition-all'>
+      <div className='d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3'>
+        {/* Welcome Text */}
+        <div>
+          <h2 className='h4 font-bold text-slate-800 dark:text-neutral-100 m-0 d-flex align-items-center gap-2'>
+            <span>
+              👋 <Trans i18nKey={'explore.welcome.user'} values={{ userName }} defaults='欢迎回来，{{userName}}' />
+            </span>
+          </h2>
+          <p className='text-muted small m-0 mt-1'>整理知识、高效写作，体验极致的 Markdown 实时协同与目录分类管理。</p>
+        </div>
+
+        {/* Stats Micro-Cards & Quick Actions */}
+        <div className='d-flex flex-wrap align-items-center gap-2 ms-md-auto'>
+          {/* Stat 1: Notes Count */}
+          <div className='d-flex align-items-center gap-2 bg-white dark:bg-neutral-800 border border-blue-100 dark:border-neutral-700 px-3 py-1.5 rounded-lg shadow-2xs'>
+            <span className='fs-5'>📝</span>
+            <div>
+              <div className='text-xs text-muted leading-tight'>笔记总数</div>
+              <div className='fw-bold text-primary small leading-tight'>{loading ? '-' : stats.totalNotes}</div>
+            </div>
+          </div>
+
+          {/* Stat 2: Folders Count */}
+          <div className='d-flex align-items-center gap-2 bg-white dark:bg-neutral-800 border border-emerald-100 dark:border-neutral-700 px-3 py-1.5 rounded-lg shadow-2xs'>
+            <span className='fs-5'>📁</span>
+            <div>
+              <div className='text-xs text-muted leading-tight'>分类目录</div>
+              <div className='fw-bold text-emerald-600 dark:text-emerald-400 small leading-tight'>
+                {loading ? '-' : stats.totalFolders}
+              </div>
+            </div>
+          </div>
+
+          {/* Stat 3: Tags Count */}
+          <div className='d-flex align-items-center gap-2 bg-white dark:bg-neutral-800 border border-purple-100 dark:border-neutral-700 px-3 py-1.5 rounded-lg shadow-2xs'>
+            <span className='fs-5'>🏷️</span>
+            <div>
+              <div className='text-xs text-muted leading-tight'>标签总数</div>
+              <div className='fw-bold text-purple-600 dark:text-purple-400 small leading-tight'>
+                {loading ? '-' : stats.totalTags}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Button: New Note */}
+          <button
+            type='button'
+            onClick={handleCreateNewNote}
+            className='btn btn-primary btn-sm rounded-lg d-flex align-items-center gap-1.5 px-3 py-1.5 font-medium shadow-sm transition-all hover:scale-105 ms-1'>
+            <span>+ 新建 MD 笔记</span>
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

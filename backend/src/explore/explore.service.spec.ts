@@ -484,4 +484,20 @@ describe('ExploreService', () => {
       expectBindings(tracker, 'delete', [[mockUserId, mockNoteId]]);
     });
   });
+
+  describe('getUserStats', () => {
+    it('returns aggregate counts for user notes, folders, and tags', async () => {
+      mockQuery('select', tracker, /from "note" where/, [{ count: '10' }]);
+      mockQuery('select', tracker, /from "folders"/, [{ count: '4' }]);
+      mockQuery('select', tracker, /from "note_tags"/, [{ count: '7' }]);
+      mockQuery('select', tracker, /from "tags"/, [{ count: '7' }]);
+
+      const stats = await service.getUserStats(mockUserId);
+      expect(stats).toEqual({
+        totalNotes: 10,
+        totalFolders: 4,
+        totalTags: 7,
+      });
+    });
+  });
 });

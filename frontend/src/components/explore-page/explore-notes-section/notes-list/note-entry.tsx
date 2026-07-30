@@ -81,8 +81,21 @@ export const NoteListEntry: React.FC<NoteListEntryProps> = ({
     }
   }, [showLastVisitedTime, lastVisitedAt, lastChangedAt])
 
+  const handleDragStart = useCallback(
+    (e: React.DragEvent) => {
+      e.dataTransfer.setData('text/plain', primaryAlias)
+      e.dataTransfer.effectAllowed = 'move'
+    },
+    [primaryAlias]
+  )
+
   return (
-    <div className={'border-top border-bottom py-3 d-flex align-items-center'}>
+    <div
+      draggable
+      onDragStart={handleDragStart}
+      className={
+        'border-top border-bottom py-3 d-flex align-items-center cursor-grab active:cursor-grabbing hover:bg-slate-50 dark:hover:bg-neutral-800/50 rounded px-2 transition-all user-select-none'
+      }>
       <span className={'mx-2'}>
         <Link href={`/n/${primaryAlias}`}>
           <NoteTypeIcon noteType={type} size={3} />

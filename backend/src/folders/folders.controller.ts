@@ -40,7 +40,7 @@ export class FoldersController {
   @Post('move-note')
   async moveNote(
     @Request() req: any,
-    @Body('noteId', ParseIntPipe) noteId: number,
+    @Body('noteId') noteId: string | number,
     @Body('folderId', ParseIntPipe) folderId: number,
   ) {
     const userId = req.user?.id || 1;

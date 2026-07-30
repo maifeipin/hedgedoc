@@ -21,6 +21,7 @@ import { type FastifyReply } from 'fastify';
 import { SessionGuard } from '../../../auth/session.guard';
 import { NoteExploreEntryDto } from '../../../dtos/note-explore-entry.dto';
 import { NotePinStatusDto } from '../../../dtos/note-pin-status.dto';
+import { ExploreStatsDto } from '../../../dtos/explore-stats.dto';
 import { ExploreService } from '../../../explore/explore.service';
 import { ConsoleLoggerService } from '../../../logger/console-logger.service';
 import { NoteService } from '../../../notes/note.service';
@@ -40,6 +41,12 @@ export class ExploreController {
     private readonly noteService: NoteService,
   ) {
     this.logger.setContext(ExploreController.name);
+  }
+
+  @Get('stats')
+  @OpenApi(200)
+  getStats(@RequestUserId() userId: number): Promise<ExploreStatsDto> {
+    return this.exploreService.getUserStats(userId);
   }
 
   @Get('my')

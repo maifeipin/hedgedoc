@@ -13,7 +13,10 @@ export interface TagWithCount {
   name: string;
   color?: string;
   count: number;
+  isSystem?: boolean;
 }
+
+const PRESET_TAG_NAMES = new Set(['重要', '待办', '工作', '学习', '随笔', '项目']);
 
 @Injectable()
 export class TagsService {
@@ -23,7 +26,7 @@ export class TagsService {
   ) {}
 
   /**
-   * 获取所有标签及包含的笔记数量
+   * 获取所有标签及包含的笔记数量与系统内置标识
    */
   async getAllTagsWithCount(): Promise<TagWithCount[]> {
     const totalCount = await this.knex(TableTag).count<{ count: string }>('id as count').first();
@@ -52,7 +55,11 @@ export class TagsService {
       .groupBy(`${TableTag}.id`, `${TableTag}.name`, `${TableTag}.color`)
       .orderBy('count', 'desc');
 
-    return rows;
+    return rows.map((r: any) => ({
+      ...r,
+      count: Number(r.count || 0),
+      isSystem: PRESET_TAG_NAMES.has(r.name),
+    }));
   }
 
   /**

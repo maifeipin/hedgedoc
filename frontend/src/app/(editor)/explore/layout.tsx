@@ -86,22 +86,32 @@ export default function ExploreLayout({ children }: ExploreLayoutProps) {
           {/* Left Sidebar Panel */}
           {!isCollapsed && (
             <div
-              className='d-flex flex-column border-end pe-3 flex-shrink-0 bg-light-subtle rounded-3 p-2 me-2 position-relative'
-              style={{ width: `${sidebarWidth}px`, transition: isDragging ? 'none' : 'width 0.15s ease' }}>
-              <div className='d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom'>
-                <span className='fw-bold text-secondary small m-0'>📖 侧边工作台</span>
+              className='d-flex flex-column border-end pe-2 flex-shrink-0 bg-slate-50/50 dark:bg-neutral-900/50 rounded-2xl p-2 me-2 position-relative shadow-2xs'
+              style={{
+                width: `${sidebarWidth}px`,
+                height: 'calc(100vh - 180px)',
+                transition: isDragging ? 'none' : 'width 0.15s ease'
+              }}>
+              <div className='d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-slate-200/80 dark:border-neutral-800 px-1'>
+                <span className='fw-bold text-slate-700 dark:text-neutral-200 text-xs m-0 d-flex align-items-center gap-1'>
+                  <span>📖 侧边工作台</span>
+                </span>
                 <button
                   type='button'
                   onClick={() => setIsCollapsed(true)}
-                  className='btn btn-sm btn-link p-0 text-secondary text-decoration-none'
+                  className='btn btn-sm btn-link p-0 text-secondary text-decoration-none text-xs hover:text-primary'
                   title='折叠侧边栏'>
                   ◀ 折叠
                 </button>
               </div>
-              <div className='mb-3 flex-grow-1 overflow-auto'>
-                <FolderTree />
+
+              {/* FolderTree Upper Scroll Container */}
+              <div className='flex-grow-1 overflow-y-auto mb-2 pe-1 space-y-1' style={{ minHeight: '120px' }}>
+                <FolderTree onNoteMoved={() => window.dispatchEvent(new CustomEvent('hedgedoc:note-moved'))} />
               </div>
-              <div className='pt-2 border-top'>
+
+              {/* TagCloud Lower Container (Anchored at bottom) */}
+              <div className='pt-2 border-top border-slate-200/80 dark:border-neutral-800 flex-shrink-0 mt-auto'>
                 <TagCloud />
               </div>
             </div>

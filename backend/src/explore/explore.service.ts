@@ -22,6 +22,9 @@ import {
   TableUser,
   TableUserPinnedNote,
   TableVisitedNote,
+  TableFolder,
+  TableTag,
+  TableNoteTag,
 } from '@hedgedoc/database';
 import { Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
@@ -29,6 +32,7 @@ import { DateTime } from 'luxon';
 import { InjectConnection } from 'nest-knexjs';
 
 import { NoteExploreEntryDto } from '../dtos/note-explore-entry.dto';
+import { ExploreStatsDto } from '../dtos/explore-stats.dto';
 import { GroupsService } from '../groups/groups.service';
 import { ConsoleLoggerService } from '../logger/console-logger.service';
 import { PermissionService } from '../permissions/permission.service';
@@ -480,5 +484,36 @@ export class ExploreService {
         return null;
       }
     });
+  }
+
+  /**
+   * Return aggregate statistics for the explore page dashboard for a given user.
+   */
+  async getUserStats(userId: number): Promise<ExploreStatsDto> {
+    const [notesRes, foldersRes, userTagsRes, globalTagsRes] = await Promise.all([
+      this.knex(TableNote)
+        .where(FieldNameNote.ownerId, userId)
+        .count<{ count: string }>('id as count')
+        .first(),
+      this.knex(TableFolder)
+        .where('owner_id', userId)
+        .count<{ count: string }>('id as count')
+        .first(),
+      this.knex(TableNoteTag)
+        .join(TableNote, `${TableNoteTag}.noteId`, `${TableNote}.id`)
+        .where(`${TableNote}.owner_id`, userId)
+        .countDistinct<{ count: string }>(`${TableNoteTag}.tagId as count`)
+        .first(),
+      this.knex(TableTag).count<{ count: string }>('id as count').first(),
+    ]);
+
+    const userTagsCount = userTagsRes ? parseInt(userTagsRes.count, 10) : 0;
+    const fallbackTagsCount = globalTagsRes ? parseInt(globalTagsRes.count, 10) : 0;
+
+    return {
+      totalNotes: notesRes ? parseInt(notesRes.count, 10) : 0,
+      totalFolders: foldersRes ? parseInt(foldersRes.count, 10) : 0,
+      totalTags: userTagsCount > 0 ? userTagsCount : fallbackTagsCount,
+    };
   }
 }

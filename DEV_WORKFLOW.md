@@ -139,8 +139,8 @@ server {
     listen 443 ssl http2;
     server_name md.maifeipin.com;
 
-    # 1. 后端 API / 静态资源 / 上传 / API文档 -> 转发至 backend (3031)
-    location ~ ^/(api|public|uploads|apidoc)/ {
+    # 1. 后端 API / 静态资源 / 上传 / 媒体图片 / API文档 -> 转发至 backend (3031)
+    location ~ ^/(api|public|uploads|media|apidoc)/ {
         proxy_pass http://127.0.0.1:3031;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -230,4 +230,4 @@ docker-compose up -d --force-recreate --no-deps backend   # 只重建 backend，
 - vps1 现为 **V2 docker-compose 单一管理**：`/app/hedgedoc/docker-compose.yml`（database + backend + frontend）。V1（`quay.io/hedgedoc:1.9.9` 镜像、`hedgedoc_app_v1_backup`、v1 `app` 容器、`hedgedoc_uploads` 卷）已全部清除。
 - 重启策略：database `always`，backend/frontend `unless-stopped`（宿主机重启后自愈）。
 - 一次性运维脚本用完即删，不入库（含口令且无 SPDX 头）。
-- 前端 uploads 当前**未挂持久卷**（重建容器会丢失上传媒体）；如需持久化，给 backend 加一个 uploads named volume 挂到 `/hedgedoc/public/uploads`。
+- backend uploads 已挂持久命名卷 `hedgedoc_uploads` → `/usr/src/app/backend/uploads`（即 `HD_MEDIA_BACKEND_FILESYSTEM_UPLOAD_PATH`），重建 backend 容器**不会丢失**上传媒体。注：这是 V2 compose 新建的卷；上方 V1 迁移清除时提到的 `hedgedoc_uploads` 是迁移前删除的旧同名卷，两者不同实例。

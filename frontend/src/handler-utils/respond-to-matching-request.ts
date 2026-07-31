@@ -25,50 +25,6 @@ export enum HttpMethod {
  * @param respondMethodNotAllowedOnMismatch If set and the method can't process the request then a 405 will be returned. Used for chaining multiple calls together.
  * @return {@link true} if the HTTP method of the request is the expected one, {@link false} otherwise.
  */
-export const proxyToBackend = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-  const backendPort = process.env.HD_BACKEND_PORT || '3000'
-  const targetUrl = `http://localhost:${backendPort}${req.url}`
-
-  const headers: Record<string, string> = {}
-  for (const [key, value] of Object.entries(req.headers)) {
-    if (key !== 'host' && value !== undefined) {
-      headers[key] = Array.isArray(value) ? value.join(', ') : value
-    }
-  }
-
-  try {
-    const hasBody = !['GET', 'HEAD'].includes(req.method || '')
-    let body: any = undefined
-    if (hasBody) {
-      if (req.body === undefined || req.body === null) {
-        body = req
-      } else if (typeof req.body === 'string' || Buffer.isBuffer(req.body)) {
-        body = req.body
-      } else {
-        body = JSON.stringify(req.body)
-      }
-    }
-
-    const fetchOptions: any = {
-      method: req.method,
-      headers,
-      body,
-      duplex: 'half'
-    }
-    const backendRes = await fetch(targetUrl, fetchOptions)
-    res.status(backendRes.status)
-    backendRes.headers.forEach((val, key) => {
-      if (key.toLowerCase() !== 'transfer-encoding' && key.toLowerCase() !== 'content-encoding') {
-        res.setHeader(key, val)
-      }
-    })
-    const arrayBuffer = await backendRes.arrayBuffer()
-    res.send(Buffer.from(arrayBuffer))
-  } catch (err) {
-    res.status(502).json({ error: 'Proxy to backend failed', details: String(err) })
-  }
-}
-
 export const respondToMatchingRequest = <T>(
   method: HttpMethod,
   req: NextApiRequest,
@@ -78,8 +34,8 @@ export const respondToMatchingRequest = <T>(
   respondMethodNotAllowedOnMismatch: boolean = true
 ): boolean => {
   if (!isMockMode) {
-    void proxyToBackend(req, res)
-    return true
+    res.status(404).send('Mock API is disabled')
+    return false
   } else if (method === req.method) {
     res.status(statusCode).json(response)
     return true

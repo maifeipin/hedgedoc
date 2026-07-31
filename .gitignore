@@ -26,6 +26,8 @@ backups/
 *.sqlite
 .turbo
 .env
+caddy.exe
+Caddyfile.local
 dist/
 frontend/cypress/downloads
 frontend/cypress/screenshots

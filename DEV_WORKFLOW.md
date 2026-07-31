@@ -1,7 +1,7 @@
 # HedgeDoc v2 开发全流程
 
 > 仓库 `maifeipin/hedgedoc`，主分支 `develop`。本文覆盖从本地开发到 vps1 上线的完整流程。
-> 最后更新：2026-07-29
+> 最后更新：2026-07-31
 
 ---
 
@@ -53,14 +53,74 @@ fnm exec --using=v24.13.0 -- node ../node_modules/jest/bin/jest.js src/tags/tags
 
 ## 3. 本地开发
 
+### 3.1 启动服务
+
 ```bash
-# 后端开发模式（热重载）
+# 后端开发模式（热重载，端口 3000）
 cd backend && fnm exec --using=v24.13.0 -- node ../.yarn/releases/yarn-4.12.0.cjs start:dev
-# 前端开发
+# 前端开发（端口 3001）
 cd frontend && fnm exec --using=v24.13.0 -- node ../.yarn/releases/yarn-4.12.0.cjs dev
 # 数据库迁移（backend，knex）
 cd backend && fnm exec --using=v24.13.0 -- node ../.yarn/releases/yarn-4.12.0.cjs knex migrate:latest
 ```
+
+亦可一键启动：`start-dev.ps1`（本地调试脚本，不入 Git）。
+
+### 3.2 本地路由架构（Caddy 本地反向代理）
+
+为保证本地开发环境与 VPS1 生产环境的反向代理拓扑 100% 一致，且不污染 Next.js 前端源码，本地采用 **Caddy (`caddy.exe`)** 监听 `http://localhost:8080` 进行网络层统一反向代理：
+
+```
+浏览器 → http://localhost:8080 (Caddy 本地反向代理)
+           │
+           ├─ /realtime*  → http://localhost:3000 (Backend, NestJS)
+           ├─ /api/*      → http://localhost:3000 (Backend, NestJS)
+           ├─ /public/*   → http://localhost:3000 (Backend, NestJS)
+           ├─ /media/*    → http://localhost:3000 (Backend, NestJS)
+           └─ /*          → http://localhost:3001 (Frontend, Next.js)
+```
+
+**方案优势**：
+1. **零代码侵入**：前端代码库保持 100% 干净，与 HedgeDoc 上游原生源码完全一致。无需修改 `next.config.js` rewrites 或使用 `proxyToBackend` 等杂项逻辑。
+2. **环境 1:1 镜像**：本地 Caddy 的路由转发规则与 VPS1 宿主机的 Nginx 转发规则完全对齐，保证本地测试行为与线上部署行为完全一致。
+3. **一键启动**：通过 `start-dev.ps1` 自动启动 `caddy.exe` 后台进程，浏览器直接访问 `http://localhost:8080` 即可调试全部功能。
+
+### 3.3 本地反向代理配置文件 (`Caddyfile.local`)
+
+根目录下的 `Caddyfile.local` 为本地 Caddy 配置文件（在 `.gitignore` 中排除，不上线）：
+
+```caddy
+http://localhost:8080 {
+    reverse_proxy /realtime* http://localhost:3000
+    reverse_proxy /api/* http://localhost:3000
+    reverse_proxy /public/* http://localhost:3000
+    reverse_proxy /media/* http://localhost:3000
+    reverse_proxy /* http://localhost:3001
+}
+```
+
+### 3.4 本地忽略与未跟踪文件清单
+
+以下文件为本地调试辅助文件（已在 `.gitignore` 或 Git 工作区中隔离，不上线）：
+
+| 文件 | 用途 | 状态 |
+|------|------|------|
+| `Caddyfile.local` | 本地 Caddy 反向代理规则配置 | 本地文件，.gitignore 排除 |
+| `caddy.exe` | 本地 Caddy 可执行程序 (v2.11.4) | 本地文件，.gitignore 排除 |
+| `start-dev.ps1` | 一键启动开发环境脚本（Caddy + Backend + Frontend） | 本地文件，未跟踪 |
+| `backend/.env` | 后端环境变量（本地 DB 密码/端口） | 本地文件，.gitignore 排除 |
+| `frontend/.env` | 前端环境变量 | 本地文件，.gitignore 排除 |
+
+### 3.5 Mock API 模式
+
+上游 HedgeDoc 的 `pages/api/*` 页面文件是为 **mock 模式**设计的——仅在 `NEXT_PUBLIC_USE_MOCK_API=true` 时返回假数据。本地开发时：
+
+- **非 mock 模式**（默认推荐）：设置 `NEXT_PUBLIC_USE_MOCK_API=false`（或未指定）。通过 Caddy (8080 端口) 访问时，所有 `/api/*` 请求直接转发给后端 3000 端口，前端源码保持纯净。
+- **mock 模式**：设置 `NEXT_PUBLIC_USE_MOCK_API=true`，前端使用 mock 数据，不连接后端。
+
+### 3.6 图片上传（multipart）
+
+通过 Caddy (8080 端口) 调试时，图片上传路径：浏览器 POST → Caddy:8080 → 后端 3000。Caddy 在网络层进行二进制流直通，无需任何前端 Next.js API 路由中间件或 `bodyParser` 拦截，完美支持大文件和图片流式上传。
 
 ---
 
@@ -126,6 +186,8 @@ gh run view <run-id> --log-failed      # 看失败日志
 ### 宿主机 Nginx 反向代理配置（`md.maifeipin.com`）
 
 HedgeDoc v2 实时编辑功能使用 Yjs 配合 WebSocket 协议，前端发起连接请求到 `/realtime`。宿主机 Nginx **必须**正确将 `/realtime` 转发至 backend（`127.0.0.1:3031`）并开启 WebSocket `Upgrade` 标头支持；后端 API 等路由转发至 `3031`；其余前端路由转发至 frontend（`127.0.0.1:3030`）。
+
+> **关键区别**：vps1 上 nginx 在容器外层拦截所有 `/api`、`/media`、`/realtime`、`/public` 请求直接转发到 backend:3031，请求**不会到达 frontend 容器**。因此 `next.config.js` 中的 rewrites 在生产环境中是**无害死代码**——它只在请求到 frontend 容器时生效，而生产请求已被 nginx 提前拦截。
 
 宿主机配置参考（`/etc/nginx/sites-available/md.maifeipin.com` 或 `/etc/nginx/conf.d/`）：
 
@@ -231,3 +293,31 @@ docker-compose up -d --force-recreate --no-deps backend   # 只重建 backend，
 - 重启策略：database `always`，backend/frontend `unless-stopped`（宿主机重启后自愈）。
 - 一次性运维脚本用完即删，不入库（含口令且无 SPDX 头）。
 - backend uploads 已挂持久命名卷 `hedgedoc_uploads` → `/usr/src/app/backend/uploads`（即 `HD_MEDIA_BACKEND_FILESYSTEM_UPLOAD_PATH`），重建 backend 容器**不会丢失**上传媒体。注：这是 V2 compose 新建的卷；上方 V1 迁移清除时提到的 `hedgedoc_uploads` 是迁移前删除的旧同名卷，两者不同实例。
+
+---
+
+## 10. 本地 vs 生产路由对比
+
+同一套纯净代码（`develop` 分支）通过相同的反向代理拓扑（本地 Caddy 8080 / 生产 Nginx 443）实现本地开发和 VPS1 生产部署的 100% 行为一致：
+
+| 维度 | 本地开发环境 (`http://localhost:8080`) | VPS1 生产环境 (`https://md.maifeipin.com`) |
+|---|---|---|
+| **入口端口** | Caddy 反向代理 `:8080` | 宿主机 Nginx 443 (HTTPS) |
+| **前端端口** | `localhost:3001` (Next.js dev) | `frontend` 容器 `:3001` (Docker 映射 `:3030`) |
+| **后端端口** | `localhost:3000` (NestJS dev) | `backend` 容器 `:3000` (Docker 映射 `:3031`) |
+| **反向代理工具** | 本地 `caddy.exe` (读取 `Caddyfile.local`) | 宿主机 Nginx (读取 `md.maifeipin.com.conf`) |
+| **路由转发规则** | `/api/*`, `/media/*`, `/realtime*`, `/public/*` → `:3000`<br>`/*` → `:3001` | `/api/*`, `/media/*`, `/realtime*`, `/public/*` → `:3031`<br>`/*` → `:3030` |
+| **源码侵入度** | **0**（无任何 `proxyToBackend` 或 `rewrites` 脏代码） | **0**（完全原生） |
+| **分支策略** | 保持与上游 `develop` 分支 100% 一致 | 保持与上游 `develop` 分支 100% 一致 |
+
+```
+本地 8080 (Caddy 拓扑):                 VPS1 443 (Nginx 拓扑):
+┌── Caddy :8080 ────────────────┐      ┌── Nginx :443 ─────────────────┐
+│  /api, /media, /realtime,     │      │  /api, /media, /realtime,     │
+│  /public → backend:3000       │      │  /public → backend:3031       │
+│  /*       → frontend:3001     │      │  /*       → frontend:3030     │
+└───────────────────────────────┘      └───────────────────────────────┘
+```
+
+> **核心原则**：不分支、零侵入。本地与 VPS1 采用 100% 相同网络拓扑。差异仅存在于反向代理层（Caddy vs Nginx）和环境配置（`.env` vs `docker-compose`）。
+

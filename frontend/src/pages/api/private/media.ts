@@ -8,6 +8,12 @@ import { isMockMode, isTestMode } from '../../../utils/test-modes'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import type { MediaUploadInterface } from '@hedgedoc/commons'
 
+export const config = {
+  api: {
+    bodyParser: false
+  }
+}
+
 const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   if (isMockMode && !isTestMode) {
     await new Promise((resolve) => {

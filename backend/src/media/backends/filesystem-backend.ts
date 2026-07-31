@@ -113,7 +113,7 @@ export class FilesystemBackend implements MediaBackend {
           `The directory '${this.uploadDirectory}' can't be accessed. Trying to create the directory`,
           'ensureDirectory',
         );
-        await fs.mkdir(this.uploadDirectory);
+        await fs.mkdir(this.uploadDirectory, { recursive: true });
       } catch (e) {
         this.logger.error((e as Error).message, (e as Error).stack, 'ensureDirectory');
         throw new MediaBackendError(`Could not create '${this.uploadDirectory}'`);

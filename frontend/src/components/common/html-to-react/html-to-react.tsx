@@ -36,8 +36,12 @@ export const HtmlToReact: React.FC<HtmlToReactProps> = ({ htmlCode, domPurifyCon
         ALLOWED_URI_REGEXP: REGEX_URI_SCHEME_NO_SCRIPTS
       })
     })
+    const cleanedHtmlCode = sanitizedHtmlCode
+      .replace(/(<\/(?:table|thead|tbody|tfoot|tr)>)\s+(?=<)/gi, '$1')
+      .replace(/(<(?:table|thead|tbody|tfoot|tr)[^>]*>)\s+(?=<)/gi, '$1')
+
     return measurePerformance('html-to-react: convertHtmlToReact', () => {
-      return convertHtmlToReact(sanitizedHtmlCode, parserOptions)
+      return convertHtmlToReact(cleanedHtmlCode, parserOptions)
     })
   }, [domPurifyConfig, htmlCode, parserOptions])
 

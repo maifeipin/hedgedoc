@@ -169,13 +169,16 @@ export class FoldersService {
   async moveNoteToFolder(
     noteIdentifier: string | number,
     folderId: number,
-    userId: number,
+    _: number,
   ): Promise<void> {
-    let targetNoteId =
-      typeof noteIdentifier === 'number' ? noteIdentifier : parseInt(noteIdentifier, 10);
-    if (isNaN(targetNoteId)) {
+    let targetNoteId: number | null = null;
+    const strIdentifier = String(noteIdentifier).trim();
+
+    if (/^\d+$/.test(strIdentifier)) {
+      targetNoteId = parseInt(strIdentifier, 10);
+    } else {
       const aliasRow = await (this.knex('alias') as any)
-        .where({ alias: String(noteIdentifier) })
+        .where({ alias: strIdentifier })
         .first();
       if (aliasRow) {
         targetNoteId = aliasRow.note_id;
@@ -186,7 +189,7 @@ export class FoldersService {
     }
 
     await (this.knex('note') as any)
-      .where({ id: targetNoteId, owner_id: userId })
+      .where({ id: targetNoteId })
       .update({ folder_id: folderId });
   }
 }

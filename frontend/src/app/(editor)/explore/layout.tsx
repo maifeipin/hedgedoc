@@ -74,32 +74,38 @@ export default function ExploreLayout({ children }: ExploreLayoutProps) {
         <div ref={layoutRef} className='d-flex mt-3 position-relative' style={{ minHeight: 'calc(100vh - 180px)' }}>
           {/* Collapsed Toggle Button when Collapsed */}
           {isCollapsed && (
-            <button
-              type='button'
-              onClick={() => setIsCollapsed(false)}
-              className='btn btn-sm btn-outline-secondary position-absolute top-0 start-0 z-3 m-2'
-              title='展开工作台侧边栏'>
-              📖 展开侧边栏 ▶
-            </button>
+            <div className='flex-shrink-0 me-3'>
+              <button
+                type='button'
+                onClick={() => setIsCollapsed(false)}
+                className='w-9 h-9 rounded-xl bg-slate-900/90 text-slate-200 border border-slate-800 shadow-sm hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center cursor-pointer'
+                title='展开侧边工作台 (目录与标签)'>
+                <svg width={16} height={16} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-blue-400'>
+                  <rect width='18' height='18' x='3' y='3' rx='2' ry='2' />
+                  <path d='M9 3v18' />
+                  <path d='m14 9 3 3-3 3' />
+                </svg>
+              </button>
+            </div>
           )}
 
           {/* Left Sidebar Panel */}
           {!isCollapsed && (
             <div
-              className='d-flex flex-column border-end pe-2 flex-shrink-0 bg-slate-50/50 dark:bg-neutral-900/50 rounded-2xl p-2 me-2 position-relative shadow-2xs'
+              className='d-flex flex-column flex-shrink-0 bg-slate-900/60 dark:bg-neutral-900/80 backdrop-blur-md rounded-2xl p-2.5 me-3 border border-slate-800/80 shadow-md position-relative'
               style={{
                 width: `${sidebarWidth}px`,
                 height: 'calc(100vh - 180px)',
                 transition: isDragging ? 'none' : 'width 0.15s ease'
               }}>
-              <div className='d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-slate-200/80 dark:border-neutral-800 px-1'>
-                <span className='fw-bold text-slate-700 dark:text-neutral-200 text-xs m-0 d-flex align-items-center gap-1'>
+              <div className='d-flex justify-content-between align-items-center mb-2.5 pb-2 border-bottom border-slate-800/80 px-2'>
+                <span className='fw-semibold text-slate-200 text-xs m-0 d-flex align-items-center gap-1.5 tracking-wide'>
                   <span>📖 侧边工作台</span>
                 </span>
                 <button
                   type='button'
                   onClick={() => setIsCollapsed(true)}
-                  className='btn btn-sm btn-link p-0 text-secondary text-decoration-none text-xs hover:text-primary'
+                  className='btn btn-sm btn-link p-0 text-slate-400 text-decoration-none text-xs hover:text-slate-200 transition-colors'
                   title='折叠侧边栏'>
                   ◀ 折叠
                 </button>
@@ -111,7 +117,7 @@ export default function ExploreLayout({ children }: ExploreLayoutProps) {
               </div>
 
               {/* TagCloud Lower Container (Anchored at bottom) */}
-              <div className='pt-2 border-top border-slate-200/80 dark:border-neutral-800 flex-shrink-0 mt-auto'>
+              <div className='pt-2 border-top border-slate-800/80 flex-shrink-0 mt-auto'>
                 <TagCloud />
               </div>
             </div>

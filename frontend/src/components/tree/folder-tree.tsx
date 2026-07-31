@@ -6,6 +6,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import styles from './folder-tree.module.scss'
 
 export interface FolderNode {
   id: number
@@ -77,12 +78,15 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     const newId = selectedFolderId === folderId ? null : folderId
 
     const params = new URLSearchParams(searchParams?.toString() || '')
-    if (newId) {
+    if (newId !== null) {
       params.set('folderId', newId.toString())
     } else {
       params.delete('folderId')
     }
-    router.push(`${pathname}?${params.toString()}`)
+    const queryString = params.toString()
+    const safePath = pathname || ''
+    const targetUrl = queryString ? `${safePath}?${queryString}` : safePath
+    router.push(targetUrl)
 
     if (onSelectFolder) {
       onSelectFolder(newId)
@@ -189,16 +193,13 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     const hasChildren = node.children && node.children.length > 0
     const isOver = draggedOverId === node.id
 
-    // Dynamic folder icon without surrogate pair regex
     let cleanName = node.name.trim()
     if (cleanName.startsWith('📁')) cleanName = cleanName.replace('📁', '').trim()
     if (cleanName.startsWith('📥')) cleanName = cleanName.replace('📥', '').trim()
     if (cleanName.startsWith('📂')) cleanName = cleanName.replace('📂', '').trim()
 
-    const iconPrefix = node.isSystem ? '📥' : isExpanded ? '📂' : '📁'
-
     return (
-      <div key={node.id} className='select-none text-xs group'>
+      <div key={node.id}>
         <div
           role='treeitem'
           aria-selected={isSelected}
@@ -212,70 +213,83 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               handleSelect(node.id)
             }
           }}
-          className={`w-full flex items-center justify-between py-1.5 px-2 rounded-md cursor-pointer transition-all ${
-            isSelected
-              ? 'bg-primary text-white font-medium shadow-sm'
-              : isOver
-                ? 'bg-blue-100 dark:bg-blue-900/50 ring-2 ring-primary shadow-sm'
-                : 'hover:bg-slate-200/70 dark:hover:bg-neutral-800 text-slate-700 dark:text-neutral-200'
-          }`}>
-          <div className='flex items-center gap-1.5 min-w-0 flex-1 me-1'>
+          className={`${styles.treeNodeRow} ${isSelected ? styles.selected : ''} ${isOver ? styles.dragOver : ''}`}>
+          <div className={styles.nodeLeft}>
             <button
               type='button'
-              onClick={(e) => toggleExpand(node.id, e)}
-              className={`p-0 border-0 bg-transparent text-xs ${isSelected ? 'text-white' : 'text-slate-400'} ${
-                !hasChildren ? 'invisible' : ''
-              }`}>
-              {isExpanded ? '▼' : '▶'}
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleExpand(node.id, e)
+              }}
+              className={`${styles.toggleBtn} ${!hasChildren ? styles.hidden : ''}`}>
+              {isExpanded ? (
+                <svg width={12} height={12} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                  <path d='m6 9 6 6 6-6' />
+                </svg>
+              ) : (
+                <svg width={12} height={12} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                  <path d='m9 18 6-6-6-6' />
+                </svg>
+              )}
             </button>
-            <span className='me-1'>{iconPrefix}</span>
-            <span className='truncate font-normal'>{cleanName}</span>
-            {node.notesCount !== undefined && node.notesCount > 0 && (
-              <span
-                className={`text-[10px] font-normal px-1.5 py-0.5 rounded-full ms-1 transition-all ${
-                  isSelected
-                    ? 'bg-white/20 text-white'
-                    : 'bg-slate-200/80 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400'
-                }`}>
-                {node.notesCount}
-              </span>
-            )}
-          </div>
 
-          {/* Hover Action Bar */}
-          <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity me-0.5'>
-            {!node.isSystem && (
-              <button
-                type='button'
-                onClick={(e) => {
-                  e.stopPropagation()
-                  openAddForm(node.id)
-                }}
-                className={`px-1 py-0.5 border-0 rounded text-[11px] ${
-                  isSelected ? 'text-white hover:bg-white/20' : 'text-primary hover:bg-primary/10'
-                }`}
-                title='在该目录下新建子目录'>
-                +子项
-              </button>
+            {node.isSystem ? (
+              <svg width={14} height={14} className={`${styles.nodeIcon} ${styles.system}`} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                <polyline points='22 12 16 12 14 15 10 15 8 12 2 12' />
+                <path d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z' />
+              </svg>
+            ) : isExpanded ? (
+              <svg width={14} height={14} className={`${styles.nodeIcon} ${styles.folder}`} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                <path d='m6 14 1.5-6h13L19 14H6z' />
+                <path d='M6 14v4a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3' />
+                <path d='M3 6a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v2' />
+              </svg>
+            ) : (
+              <svg width={14} height={14} className={`${styles.nodeIcon} ${styles.folder}`} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                <path d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L8.6 3.3A2 2 0 0 0 6.9 2.5H4a2 2 0 0 0-2 2v13.5a2 2 0 0 0 2 2z' />
+              </svg>
             )}
+
+            <span className={styles.nodeText}>{cleanName}</span>
+
+            {node.notesCount !== undefined && node.notesCount > 0 && (
+              <span className={styles.nodeBadge}>{node.notesCount}</span>
+            )}
+
+            {/* Hover Action Bar */}
             {!node.isSystem && (
-              <button
-                type='button'
-                onClick={(e) => handleDeleteFolder(node.id, e)}
-                className={`px-1 py-0.5 border-0 rounded text-[11px] transition-colors ${
-                  isSelected
-                    ? 'text-white/80 hover:text-white hover:bg-red-500/40'
-                    : 'text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30'
-                }`}
-                title='删除目录'>
-                ✕
-              </button>
+              <div className={styles.hoverActions}>
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    openAddForm(node.id)
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className={styles.actionBtn}
+                  title='在该目录下新建子目录'>
+                  +子项
+                </button>
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    void handleDeleteFolder(node.id, e)
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className={styles.deleteBtn}
+                  title='删除目录'>
+                  ✕
+                </button>
+              </div>
             )}
           </div>
         </div>
 
         {isExpanded && hasChildren && (
-          <div className='ps-1 border-start border-slate-200 dark:border-neutral-700 ms-3 my-0.5 space-y-0.5'>
+          <div className={styles.treeChildren}>
             {node.children!.map((child) => renderNode(child, level + 1))}
           </div>
         )}
@@ -284,32 +298,34 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
   }
 
   return (
-    <div className='w-full flex flex-col bg-slate-50/80 dark:bg-neutral-900/80 p-2.5 rounded-xl border border-slate-200/60 dark:border-neutral-800'>
+    <div className={styles.treeContainer}>
       {/* Header controls */}
-      <div className='flex items-center justify-between pb-2 mb-1 border-b border-slate-200/80 dark:border-neutral-800 px-1'>
-        <h3 className='font-bold text-slate-700 dark:text-neutral-200 text-xs m-0 flex items-center'>目录与工作台</h3>
-        <div className='flex items-center gap-1.5'>
+      <div className={styles.treeHeader}>
+        <div className={styles.title}>
+          <span>📂 目录与工作台</span>
+        </div>
+        <div className={styles.headerActions}>
           <button
             type='button'
             onClick={() => openAddForm(null)}
-            className='btn btn-sm btn-light py-0.5 px-2 text-xs rounded-md border-slate-200 dark:border-neutral-700'
+            className={styles.btnPrimary}
             title='新建顶级根目录'>
-            + 根目录
+            <span>+ 根目录</span>
           </button>
           {selectedFolderId && (
             <button
               type='button'
               onClick={() => openAddForm(selectedFolderId)}
-              className='btn btn-sm btn-primary py-0.5 px-2 text-xs rounded-md'
+              className={styles.btnSecondary}
               title='在选中目录下创建子目录'>
-              + 子项
+              <span>+ 子项</span>
             </button>
           )}
           {onImportMD && (
             <button
               type='button'
               onClick={onImportMD}
-              className='btn btn-sm btn-outline-secondary py-0.5 px-2 text-xs rounded-md'
+              className={styles.btnPrimary}
               title='导入 Markdown 文件'>
               导入
             </button>
@@ -319,19 +335,17 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
 
       {/* Add Folder Form Drawer */}
       {showAddForm && (
-        <form
-          onSubmit={handleCreateFolder}
-          className='mb-3 p-2 bg-white dark:bg-neutral-800 border rounded-lg shadow-sm flex flex-col gap-2'>
-          <div className='text-xs font-semibold text-slate-700 dark:text-neutral-300'>新建文件夹</div>
+        <form onSubmit={handleCreateFolder} className={styles.formDrawer}>
+          <div className={styles.formTitle}>新建文件夹</div>
           <div>
-            <label htmlFor='parent-folder-select' className='text-xs text-slate-500 mb-1 block'>
+            <label htmlFor='parent-folder-select' className={styles.formLabel}>
               选择上级目录：
             </label>
             <select
               id='parent-folder-select'
               value={selectedParentId || ''}
               onChange={(e) => setSelectedParentId(e.target.value ? parseInt(e.target.value, 10) : null)}
-              className='form-select form-select-sm text-xs rounded-md dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700'>
+              className={styles.formSelect}>
               <option value=''>(无 - 作为顶级根目录)</option>
               {getAllFolderOptions(treeData).map((opt) => (
                 <option key={opt.id} value={opt.id}>
@@ -346,30 +360,32 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder='输入文件夹名称...'
-              className='form-control form-control-sm text-xs rounded-md dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700'
+              className={styles.formInput}
               required
             />
           </div>
-          <div className='flex justify-end gap-1 pt-1'>
+          <div className={styles.formButtons}>
             <button
               type='button'
               onClick={() => setShowAddForm(false)}
-              className='btn btn-sm btn-light text-xs py-0.5 px-2 rounded-md'>
+              className={styles.btnPrimary}>
               取消
             </button>
-            <button type='submit' className='btn btn-sm btn-success text-xs py-0.5 px-2 rounded-md'>
+            <button type='submit' className={styles.btnSecondary}>
               保存
             </button>
           </div>
         </form>
       )}
 
-      {/* Folder Tree List (No inner overflow-y-auto to prevent double scrollbars) */}
-      <div className='space-y-0.5'>
+      {/* Folder Tree List */}
+      <div className={styles.treeList}>
         {loading ? (
-          <div className='text-xs text-slate-400 p-2'>加载目录中...</div>
+          <div style={{ fontSize: '12px', color: '#94a3b8', padding: '8px', textAlign: 'center' }}>加载目录中...</div>
         ) : treeData.length === 0 ? (
-          <div className='text-xs text-slate-400 p-2'>暂无目录</div>
+          <div style={{ fontSize: '12px', color: '#64748b', padding: '12px', textAlign: 'center', border: '1px dashed #334155', borderRadius: '8px' }}>
+            暂无目录
+          </div>
         ) : (
           treeData.map((node) => renderNode(node))
         )}

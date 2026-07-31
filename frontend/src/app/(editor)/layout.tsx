@@ -35,7 +35,8 @@ export default async function RootLayout({ children, appBar }: RootLayoutProps) 
   return (
     <html lang='en'>
       <head>
-        <link color='#b51f08' href='/icons/safari-pinned-tab.svg' rel='mask-icon' />
+        <link rel='icon' href='/favicon.svg' type='image/svg+xml' />
+        <link color='#00f2fe' href='/icons/safari-pinned-tab.svg' rel='mask-icon' />
       </head>
       <body>
         <ExpectedOriginBoundary expectedOrigin={baseUrls.editor}>

@@ -37,8 +37,8 @@ export const HtmlToReact: React.FC<HtmlToReactProps> = ({ htmlCode, domPurifyCon
       })
     })
     const cleanedHtmlCode = sanitizedHtmlCode
-      .replace(/(<\/(?:table|thead|tbody|tfoot|tr)>)\s+(?=<)/gi, '$1')
-      .replace(/(<(?:table|thead|tbody|tfoot|tr)[^>]*>)\s+(?=<)/gi, '$1')
+      .replace(/(<\/(?:table|thead|tbody|tfoot|tr|th|td)>)\s+(?=<)/gi, '$1')
+      .replace(/(<(?:table|thead|tbody|tfoot|tr|th|td)[^>]*>)\s+(?=<)/gi, '$1')
 
     return measurePerformance('html-to-react: convertHtmlToReact', () => {
       return convertHtmlToReact(cleanedHtmlCode, parserOptions)

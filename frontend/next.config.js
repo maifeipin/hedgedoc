@@ -94,6 +94,27 @@ const rawNextConfig = {
       }
     ])
   },
+  async rewrites() {
+    const backendUrl = process.env.HD_INTERNAL_API_URL || 'http://localhost:3000'
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendUrl}/api/:path*`
+      },
+      {
+        source: '/realtime/:path*',
+        destination: `${backendUrl}/realtime/:path*`
+      },
+      {
+        source: '/public/:path*',
+        destination: `${backendUrl}/public/:path*`
+      },
+      {
+        source: '/media/:path*',
+        destination: `${backendUrl}/media/:path*`
+      }
+    ]
+  },
   output: 'standalone',
   swcMinify: true,
   experimental: {

@@ -311,15 +311,15 @@ export class MediaService {
     const linkedNoteIds = await this.getLinkedNoteIds(uuid);
 
     if (linkedNoteIds.length === 0) {
-      return userId !== null && mediaUpload[FieldNameMediaUpload.userId] === userId;
+      return mediaUpload[FieldNameMediaUpload.userId] === userId;
     }
 
-    const checkUserId = userId ?? 0;
+    if (userId === null) {
+      return false;
+    }
+
     for (const noteId of linkedNoteIds) {
-      const linkedNotePermission = await this.permissionService.determinePermission(
-        checkUserId,
-        noteId,
-      );
+      const linkedNotePermission = await this.permissionService.determinePermission(userId, noteId);
       if (linkedNotePermission >= PermissionLevel.READ) {
         return true;
       }

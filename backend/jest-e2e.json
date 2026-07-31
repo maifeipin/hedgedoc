@@ -18,6 +18,10 @@
     ]
   },
   "coverageDirectory": "./coverage-e2e",
+  "transformIgnorePatterns": [
+    "/node_modules/",
+    "<rootDir>/../commons/dist/cjs/"
+  ],
   "testTimeout": 15000,
   "reporters": ["default", "github-actions"],
   "maxWorkers": 4,

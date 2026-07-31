@@ -10,9 +10,7 @@ interface HedgeDocLogoVerticalProps {
   size?: LogoSize | number
 }
 
-export const HedgeDocLogoVertical: React.FC<HedgeDocLogoVerticalProps> = ({
-  size = LogoSize.MEDIUM
-}) => {
+export const HedgeDocLogoVertical: React.FC<HedgeDocLogoVerticalProps> = ({ size = LogoSize.MEDIUM }) => {
   return (
     <svg
       height={`${size}px`}

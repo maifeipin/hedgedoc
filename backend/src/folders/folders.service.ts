@@ -177,9 +177,7 @@ export class FoldersService {
     if (/^\d+$/.test(strIdentifier)) {
       targetNoteId = parseInt(strIdentifier, 10);
     } else {
-      const aliasRow = await (this.knex('alias') as any)
-        .where({ alias: strIdentifier })
-        .first();
+      const aliasRow = await (this.knex('alias') as any).where({ alias: strIdentifier }).first();
       if (aliasRow) {
         targetNoteId = aliasRow.note_id;
       }
@@ -188,8 +186,6 @@ export class FoldersService {
       throw new BadRequestException(`无法找到标识符为 '${noteIdentifier}' 的 Markdown 笔记`);
     }
 
-    await (this.knex('note') as any)
-      .where({ id: targetNoteId })
-      .update({ folder_id: folderId });
+    await (this.knex('note') as any).where({ id: targetNoteId }).update({ folder_id: folderId });
   }
 }

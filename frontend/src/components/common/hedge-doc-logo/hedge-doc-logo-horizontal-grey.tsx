@@ -26,7 +26,11 @@ export const HedgeDocLogoHorizontalGrey: React.FC<HedgeDocLogoHorizontalGreyProp
   return (
     <svg
       height={`${size}px`}
-      style={{ height: `${size}px`, width: showText ? 'auto' : `${size}px`, minWidth: showText ? '120px' : `${size}px` }}
+      style={{
+        height: `${size}px`,
+        width: showText ? 'auto' : `${size}px`,
+        minWidth: showText ? '120px' : `${size}px`
+      }}
       viewBox={showText ? '0 0 320 100' : '0 0 100 100'}
       className={className}
       fill='none'

@@ -223,29 +223,72 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
               }}
               className={`${styles.toggleBtn} ${!hasChildren ? styles.hidden : ''}`}>
               {isExpanded ? (
-                <svg width={12} height={12} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                <svg
+                  width={12}
+                  height={12}
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2.5'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'>
                   <path d='m6 9 6 6 6-6' />
                 </svg>
               ) : (
-                <svg width={12} height={12} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                <svg
+                  width={12}
+                  height={12}
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2.5'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'>
                   <path d='m9 18 6-6-6-6' />
                 </svg>
               )}
             </button>
 
             {node.isSystem ? (
-              <svg width={14} height={14} className={`${styles.nodeIcon} ${styles.system}`} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+              <svg
+                width={14}
+                height={14}
+                className={`${styles.nodeIcon} ${styles.system}`}
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'>
                 <polyline points='22 12 16 12 14 15 10 15 8 12 2 12' />
                 <path d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z' />
               </svg>
             ) : isExpanded ? (
-              <svg width={14} height={14} className={`${styles.nodeIcon} ${styles.folder}`} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+              <svg
+                width={14}
+                height={14}
+                className={`${styles.nodeIcon} ${styles.folder}`}
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'>
                 <path d='m6 14 1.5-6h13L19 14H6z' />
                 <path d='M6 14v4a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3' />
                 <path d='M3 6a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v2' />
               </svg>
             ) : (
-              <svg width={14} height={14} className={`${styles.nodeIcon} ${styles.folder}`} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+              <svg
+                width={14}
+                height={14}
+                className={`${styles.nodeIcon} ${styles.folder}`}
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'>
                 <path d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L8.6 3.3A2 2 0 0 0 6.9 2.5H4a2 2 0 0 0-2 2v13.5a2 2 0 0 0 2 2z' />
               </svg>
             )}
@@ -289,9 +332,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
         </div>
 
         {isExpanded && hasChildren && (
-          <div className={styles.treeChildren}>
-            {node.children!.map((child) => renderNode(child, level + 1))}
-          </div>
+          <div className={styles.treeChildren}>{node.children!.map((child) => renderNode(child, level + 1))}</div>
         )}
       </div>
     )
@@ -305,11 +346,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
           <span>📂 目录与工作台</span>
         </div>
         <div className={styles.headerActions}>
-          <button
-            type='button'
-            onClick={() => openAddForm(null)}
-            className={styles.btnPrimary}
-            title='新建顶级根目录'>
+          <button type='button' onClick={() => openAddForm(null)} className={styles.btnPrimary} title='新建顶级根目录'>
             <span>+ 根目录</span>
           </button>
           {selectedFolderId && (
@@ -322,11 +359,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
             </button>
           )}
           {onImportMD && (
-            <button
-              type='button'
-              onClick={onImportMD}
-              className={styles.btnPrimary}
-              title='导入 Markdown 文件'>
+            <button type='button' onClick={onImportMD} className={styles.btnPrimary} title='导入 Markdown 文件'>
               导入
             </button>
           )}
@@ -365,10 +398,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
             />
           </div>
           <div className={styles.formButtons}>
-            <button
-              type='button'
-              onClick={() => setShowAddForm(false)}
-              className={styles.btnPrimary}>
+            <button type='button' onClick={() => setShowAddForm(false)} className={styles.btnPrimary}>
               取消
             </button>
             <button type='submit' className={styles.btnSecondary}>
@@ -383,7 +413,15 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
         {loading ? (
           <div style={{ fontSize: '12px', color: '#94a3b8', padding: '8px', textAlign: 'center' }}>加载目录中...</div>
         ) : treeData.length === 0 ? (
-          <div style={{ fontSize: '12px', color: '#64748b', padding: '12px', textAlign: 'center', border: '1px dashed #334155', borderRadius: '8px' }}>
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#64748b',
+              padding: '12px',
+              textAlign: 'center',
+              border: '1px dashed #334155',
+              borderRadius: '8px'
+            }}>
             暂无目录
           </div>
         ) : (

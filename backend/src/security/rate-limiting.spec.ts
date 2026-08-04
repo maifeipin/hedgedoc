@@ -93,6 +93,12 @@ describe('rate limiting', () => {
     expect(getMaxLimitByRequestWithSecurityConfig(securityConfig)(request, 'key')).toBe(Infinity);
   });
 
+  it('never rate limits media requests', () => {
+    const request = createMockedRequest({ url: '/media/019fcccd-7df5-7552-bc85-4f8874d0a762' });
+    expect(getTimeWindowByRequestWithSecurityConfig(securityConfig)(request, 'key')).toBe(0);
+    expect(getMaxLimitByRequestWithSecurityConfig(securityConfig)(request, 'key')).toBe(Infinity);
+  });
+
   it('uses auth limits for auth endpoints', () => {
     const request = createMockedRequest({ url: '/api/private/auth/login' });
     expect(getTimeWindowByRequestWithSecurityConfig(securityConfig)(request, 'key')).toBe(900000);

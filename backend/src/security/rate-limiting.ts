@@ -53,8 +53,15 @@ function getRateLimitConfigByRequest(
   const path = req.routeOptions?.url ?? req.url;
   const userId = getUserIdFromSession(req);
 
-  // Logout and monitoring are never rate-limited
-  if (path === '/api/private/auth/logout' || path.startsWith('/api/private/monitoring')) {
+  // Logout, monitoring and media are never rate-limited.
+  // Media access is already protected by per-note permissions (canUserAccessUpload).
+  // Rate limiting media would break notes that load many images or attachments,
+  // because the global rate limit counter is shared across all routes.
+  if (
+    path === '/api/private/auth/logout' ||
+    path.startsWith('/api/private/monitoring') ||
+    path.startsWith('/media')
+  ) {
     return {
       max: Infinity,
     };

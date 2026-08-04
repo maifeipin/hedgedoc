@@ -68,10 +68,10 @@ export class MediaService {
   /**
    * Checks if the given MIME type is allowed for media uploads
    *
-   * @param mimeType The MIME type to check
+   * @param _ The MIME type to check
    * @returns true if the MIME type is allowed, false otherwise
    */
-  private static isAllowedMimeType(mimeType: string): boolean {
+  private static isAllowedMimeType(_: string): boolean {
     // Allow any file type (images, PDFs, documents, archives, etc.)
     return true;
   }

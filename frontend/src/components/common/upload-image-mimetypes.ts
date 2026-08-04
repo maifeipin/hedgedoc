@@ -20,3 +20,9 @@ export const supportedMimeTypes: string[] = [
 ]
 
 export const acceptedMimeTypes = supportedMimeTypes.join(', ')
+
+/**
+ * Accepts any file type. Used by the toolbar upload button, since the backend
+ * now allows uploading arbitrary attachments (PDFs, archives, documents, ...).
+ */
+export const acceptedAllFileTypes = '*/*'

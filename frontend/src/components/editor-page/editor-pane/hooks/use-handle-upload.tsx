@@ -5,7 +5,6 @@
  */
 import { uploadFile } from '../../../../api/media'
 import { getGlobalState } from '../../../../redux'
-import { supportedMimeTypes } from '../../../common/upload-image-mimetypes'
 import { useUiNotifications } from '../../../notifications/ui-notification-boundary'
 import type { ContentFormatter } from '../../change-content-context/use-change-editor-content-callback'
 import { changeEditorContent } from '../../change-content-context/use-change-editor-content-callback'
@@ -19,9 +18,9 @@ import type { ApiError } from 'next/dist/server/api-utils'
 
 /**
  * @param view the codemirror instance that is used to insert the Markdown code
- * @param file The file to upload
+ * @param file The file to upload (image or any other attachment)
  * @param cursorSelection The position where the progress message should be placed
- * @param description The text that should be used in the description part of the resulting image tag
+ * @param description The text that should be used in the description part of the resulting link
  * @param additionalUrlText Additional text that should be inserted behind the link but within the tag
  */
 type handleUploadSignature = (
@@ -34,6 +33,7 @@ type handleUploadSignature = (
 
 /**
  * Provides a callback that uploads a given file and inserts the correct Markdown code into the current editor.
+ * Images are inserted as `![alt](url)`, any other file type as `[filename](url)`.
  */
 export const useHandleUpload = (): handleUploadSignature => {
   const { t } = useTranslation()
@@ -42,15 +42,18 @@ export const useHandleUpload = (): handleUploadSignature => {
   return useCallback(
     (view, file, cursorSelection, description, additionalUrlText) => {
       const changeContent = (callback: ContentFormatter) => changeEditorContent(view, callback)
-      if (!file || !supportedMimeTypes.includes(file.type) || !changeContent) {
+      if (!file || !changeContent) {
         return
       }
+      const isImage = file.type.startsWith('image/')
       const randomId = Math.random().toString(36).slice(7)
       const uploadFileInfo = description
         ? t('editor.upload.uploadFile.withDescription', { fileName: file.name, description: description })
         : t('editor.upload.uploadFile.withoutDescription', { fileName: file.name })
 
-      const uploadPlaceholder = `![${uploadFileInfo}](upload-${randomId}${additionalUrlText ?? ''})`
+      const uploadPlaceholder = isImage
+        ? `![${uploadFileInfo}](upload-${randomId}${additionalUrlText ?? ''})`
+        : `[${uploadFileInfo}](upload-${randomId}${additionalUrlText ?? ''})`
       const noteAlias = getGlobalState().noteDetails?.primaryAlias
       if (noteAlias === undefined) {
         return
@@ -60,7 +63,9 @@ export const useHandleUpload = (): handleUploadSignature => {
       })
       uploadFile(noteAlias, file)
         .then((uuid) => {
-          const replacement = `![${description ?? file.name ?? ''}](media/${uuid}${additionalUrlText ?? ''})`
+          const replacement = isImage
+            ? `![${description ?? file.name ?? ''}](media/${uuid}${additionalUrlText ?? ''})`
+            : `[${file.name ?? description ?? ''}](media/${uuid}${additionalUrlText ?? ''})`
           changeContent(({ markdownContent }) => [
             replaceInContent(markdownContent, uploadPlaceholder, replacement),
             undefined

@@ -29,8 +29,8 @@ describe('File upload', () => {
     })
     it('via button', () => {
       cy.getByCypressId('editor-pane').should('have.attr', 'data-cypress-editor-ready', 'true')
-      cy.getByCypressId('toolbar.uploadImage').should('be.visible')
-      cy.getByCypressId('toolbar.uploadImage.input').selectFile(
+      cy.getByCypressId('toolbar.uploadFile').should('be.visible')
+      cy.getByCypressId('toolbar.uploadFile.input').selectFile(
         {
           contents: '@demoImage',
           fileName: 'demo.png',
@@ -81,8 +81,8 @@ describe('File upload', () => {
           statusCode: 400
         }
       )
-      cy.getByCypressId('toolbar.uploadImage').should('be.visible')
-      cy.getByCypressId('toolbar.uploadImage.input').selectFile(
+      cy.getByCypressId('toolbar.uploadFile').should('be.visible')
+      cy.getByCypressId('toolbar.uploadFile.input').selectFile(
         {
           contents: '@demoImage',
           fileName: 'demo.png',
@@ -107,8 +107,8 @@ describe('File upload', () => {
           statusCode: 413
         }
       )
-      cy.getByCypressId('toolbar.uploadImage').should('be.visible')
-      cy.getByCypressId('toolbar.uploadImage.input').selectFile(
+      cy.getByCypressId('toolbar.uploadFile').should('be.visible')
+      cy.getByCypressId('toolbar.uploadFile.input').selectFile(
         {
           contents: '@demoImage',
           fileName: 'demo.png',

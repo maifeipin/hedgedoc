@@ -5,7 +5,7 @@
  */
 import { cypressId } from '../../../../../utils/cypress-attribute'
 import { Logger } from '../../../../../utils/logger'
-import { acceptedMimeTypes } from '../../../../common/upload-image-mimetypes'
+import { acceptedAllFileTypes } from '../../../../common/upload-image-mimetypes'
 import { UploadInput } from '../../../../common/upload-input'
 import { useCodemirrorReferenceContext } from '../../../change-content-context/codemirror-reference-context'
 import { useHandleUpload } from '../../hooks/use-handle-upload'
@@ -15,7 +15,7 @@ import { Optional } from '@mrdrogdrog/optional'
 import React, { Fragment, useCallback, useRef } from 'react'
 import { Upload as IconUpload } from 'react-bootstrap-icons'
 
-const logger = new Logger('Upload image button')
+const logger = new Logger('Upload file button')
 
 /**
  * Shows a button that uploads a chosen file to the backend and adds the link to the note.
@@ -32,7 +32,7 @@ export const UploadImageButton: React.FC = () => {
   const onUploadImage = useCallback(
     (file: File) => {
       if (codeMirror === undefined) {
-        logger.error("can't upload image without codemirror reference")
+        logger.error("can't upload file without codemirror reference")
         return
       }
       const description = Optional.ofNullable(codeMirror?.state)
@@ -45,13 +45,13 @@ export const UploadImageButton: React.FC = () => {
 
   return (
     <Fragment>
-      <ToolbarButton i18nKey={'uploadImage'} icon={IconUpload} onClick={buttonClick}>
+      <ToolbarButton i18nKey={'uploadFile'} icon={IconUpload} onClick={buttonClick}>
         {codeMirror !== undefined && (
           <UploadInput
             onLoad={onUploadImage}
-            allowedFileTypes={acceptedMimeTypes}
+            allowedFileTypes={acceptedAllFileTypes}
             onClickRef={clickRef}
-            {...cypressId('toolbar.uploadImage.input')}
+            {...cypressId('toolbar.uploadFile.input')}
           />
         )}
       </ToolbarButton>

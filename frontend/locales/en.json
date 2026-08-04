@@ -264,7 +264,7 @@
       "checkList": "Checklist",
       "link": "Link",
       "imageLink": "Image",
-      "uploadImage": "Upload Image",
+      "uploadFile": "Upload File",
       "highlight": "Highlight",
       "table": {
         "titleWithoutSize": "Table",

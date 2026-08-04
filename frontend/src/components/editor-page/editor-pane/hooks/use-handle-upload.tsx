@@ -5,6 +5,7 @@
  */
 import { uploadFile } from '../../../../api/media'
 import { getGlobalState } from '../../../../redux'
+import { useBaseUrl } from '../../../../hooks/common/use-base-url'
 import { useUiNotifications } from '../../../notifications/ui-notification-boundary'
 import type { ContentFormatter } from '../../change-content-context/use-change-editor-content-callback'
 import { changeEditorContent } from '../../change-content-context/use-change-editor-content-callback'
@@ -38,6 +39,7 @@ type handleUploadSignature = (
 export const useHandleUpload = (): handleUploadSignature => {
   const { t } = useTranslation()
   const { showErrorNotificationBuilder } = useUiNotifications()
+  const baseUrl = useBaseUrl()
 
   return useCallback(
     (view, file, cursorSelection, description, additionalUrlText) => {
@@ -63,9 +65,10 @@ export const useHandleUpload = (): handleUploadSignature => {
       })
       uploadFile(noteAlias, file)
         .then((uuid) => {
+          const mediaUrl = `${baseUrl}media/${uuid}`
           const replacement = isImage
-            ? `![${description ?? file.name ?? ''}](media/${uuid}${additionalUrlText ?? ''})`
-            : `[${file.name ?? description ?? ''}](media/${uuid}${additionalUrlText ?? ''})`
+            ? `![${description ?? file.name ?? ''}](${mediaUrl}${additionalUrlText ?? ''})`
+            : `[${file.name ?? description ?? ''}](${mediaUrl}${additionalUrlText ?? ''})`
           changeContent(({ markdownContent }) => [
             replaceInContent(markdownContent, uploadPlaceholder, replacement),
             undefined
@@ -83,6 +86,6 @@ export const useHandleUpload = (): handleUploadSignature => {
           ])
         })
     },
-    [showErrorNotificationBuilder, t]
+    [showErrorNotificationBuilder, t, baseUrl]
   )
 }

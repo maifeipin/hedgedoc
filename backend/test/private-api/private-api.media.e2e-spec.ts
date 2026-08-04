@@ -54,7 +54,7 @@ describe('Media', () => {
     describe('works', () => {
       let uuid: string;
       afterEach(async () => {
-        await fs.unlink(join(uploadPath, uuid + '.png'));
+        await fs.unlink(join(uploadPath, uuid + '.png')).catch(() => undefined);
         await ensureDeleted(uploadPath);
       });
       it('with user', async () => {
@@ -147,8 +147,8 @@ describe('Media', () => {
           .attach('file', 'test/private-api/fixtures/test.zip')
           .set('HedgeDoc-Note', noteAlias1)
           .expect(201);
-        const zipUuid = uploadResponse.body.uuid;
-        await expect(fs.access(join(uploadPath, zipUuid + '.zip'))).resolves.toBeUndefined();
+        uuid = uploadResponse.body.uuid;
+        await expect(fs.access(join(uploadPath, uuid + '.zip'))).resolves.toBeUndefined();
       });
     });
 

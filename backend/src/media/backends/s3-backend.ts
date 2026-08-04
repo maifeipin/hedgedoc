@@ -48,11 +48,11 @@ export class S3Backend implements MediaBackend {
     });
   }
 
-  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult): Promise<null> {
+  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult | undefined): Promise<null> {
     try {
       await this.client.putObject(this.config.bucket, uuid, buffer, buffer.length, {
         // oxlint-disable-next-line @typescript-eslint/naming-convention
-        'Content-Type': fileType.mime,
+        'Content-Type': fileType?.mime ?? 'application/octet-stream',
       });
       this.logger.log(`Uploaded file ${uuid}`, 'saveFile');
       return null;

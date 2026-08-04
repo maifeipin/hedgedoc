@@ -34,13 +34,15 @@ export class FilesystemBackend implements MediaBackend {
     this.logger.debug(`Activated media backend filesystem using ${this.uploadDirectory}`);
   }
 
-  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult): Promise<string> {
-    const filePath = this.getFilePath(uuid, fileType.ext);
+  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult | undefined): Promise<string> {
+    const ext = fileType?.ext ?? 'bin';
+    const mime = fileType?.mime ?? 'application/octet-stream';
+    const filePath = this.getFilePath(uuid, ext);
     this.logger.debug(`Writing uploaded file to '${filePath}'`, 'saveFile');
     await this.ensureDirectory();
     try {
       await fs.writeFile(filePath, buffer, null);
-      return JSON.stringify({ ext: fileType.ext, mime: fileType.mime });
+      return JSON.stringify({ ext, mime });
     } catch (e) {
       this.logger.error((e as Error).message, (e as Error).stack, 'saveFile');
       throw new MediaBackendError(`Could not save file '${filePath}'`);

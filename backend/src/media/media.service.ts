@@ -72,21 +72,8 @@ export class MediaService {
    * @returns true if the MIME type is allowed, false otherwise
    */
   private static isAllowedMimeType(mimeType: string): boolean {
-    const allowedTypes = [
-      'image/apng',
-      'image/bmp',
-      'image/gif',
-      'image/heif',
-      'image/heic',
-      'image/heif-sequence',
-      'image/heic-sequence',
-      'image/jpeg',
-      'image/png',
-      'image/svg+xml',
-      'image/tiff',
-      'image/webp',
-    ];
-    return allowedTypes.includes(mimeType);
+    // Allow any file type (images, PDFs, documents, archives, etc.)
+    return true;
   }
 
   /**
@@ -110,10 +97,8 @@ export class MediaService {
   ): Promise<string> {
     this.logger.debug(`Saving file for user '${userId}'`, 'saveFile');
     const fileTypeResult = await FileType.fromBuffer(fileBuffer);
-    if (!fileTypeResult) {
-      throw new ClientError('Could not detect file type.');
-    }
-    if (!MediaService.isAllowedMimeType(fileTypeResult.mime)) {
+    // Allow any file type, even if MIME type cannot be detected
+    if (fileTypeResult && !MediaService.isAllowedMimeType(fileTypeResult.mime)) {
       throw new ClientError('MIME type not allowed.');
     }
     const uuid = uuidV7();

@@ -56,10 +56,11 @@ export class WebdavBackend implements MediaBackend {
       });
   }
 
-  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult): Promise<string> {
+  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult | undefined): Promise<string> {
     try {
       const contentLength = buffer.length;
-      const remoteFileName = `${uuid}.${fileType.ext}`;
+      const ext = fileType?.ext ?? 'bin';
+      const remoteFileName = `${uuid}.${ext}`;
       await fetch(WebdavBackend.joinURL(this.baseUrl, '/', remoteFileName), {
         method: 'PUT',
         body: buffer,

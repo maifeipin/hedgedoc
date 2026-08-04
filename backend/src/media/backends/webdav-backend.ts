@@ -56,7 +56,11 @@ export class WebdavBackend implements MediaBackend {
       });
   }
 
-  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult | undefined): Promise<string> {
+  async saveFile(
+    uuid: string,
+    buffer: Buffer,
+    fileType: FileTypeResult | undefined,
+  ): Promise<string> {
     try {
       const contentLength = buffer.length;
       const ext = fileType?.ext ?? 'bin';

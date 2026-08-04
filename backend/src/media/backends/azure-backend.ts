@@ -42,7 +42,11 @@ export class AzureBackend implements MediaBackend {
     this.client = blobServiceClient.getContainerClient(this.config.container);
   }
 
-  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult | undefined): Promise<null> {
+  async saveFile(
+    uuid: string,
+    buffer: Buffer,
+    fileType: FileTypeResult | undefined,
+  ): Promise<null> {
     const blockBlobClient: BlockBlobClient = this.client.getBlockBlobClient(uuid);
     try {
       await blockBlobClient.upload(buffer, buffer.length, {

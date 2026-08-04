@@ -34,7 +34,11 @@ export class FilesystemBackend implements MediaBackend {
     this.logger.debug(`Activated media backend filesystem using ${this.uploadDirectory}`);
   }
 
-  async saveFile(uuid: string, buffer: Buffer, fileType: FileTypeResult | undefined): Promise<string> {
+  async saveFile(
+    uuid: string,
+    buffer: Buffer,
+    fileType: FileTypeResult | undefined,
+  ): Promise<string> {
     const ext = fileType?.ext ?? 'bin';
     const mime = fileType?.mime ?? 'application/octet-stream';
     const filePath = this.getFilePath(uuid, ext);

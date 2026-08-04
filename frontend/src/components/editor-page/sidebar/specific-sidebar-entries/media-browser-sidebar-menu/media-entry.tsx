@@ -41,6 +41,10 @@ export const MediaEntry: React.FC<MediaEntryProps> = ({ entry, onDelete }) => {
   const imageUrl = useMemo(() => {
     return `${baseUrl}media/${entry.uuid}`
   }, [entry, baseUrl])
+  const isImage = useMemo(() => {
+    const extension = entry.fileName.split('.').pop()?.toLowerCase() ?? ''
+    return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'avif', 'ico'].includes(extension)
+  }, [entry])
   const textCreatedTime = useMemo(() => {
     return new Date(entry.createdAt).toLocaleString()
   }, [entry])
@@ -62,8 +66,12 @@ export const MediaEntry: React.FC<MediaEntryProps> = ({ entry, onDelete }) => {
   return (
     <div className={'p-2 border-bottom border-opacity-50'}>
       <a href={imageUrl} target={'_blank'} rel={'noreferrer'} className={'text-center d-block mb-2'}>
-        {/* oxlint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt={`Upload ${entry.fileName}`} className={styles.preview} />
+        {isImage ? (
+          // oxlint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt={`Upload ${entry.fileName}`} className={styles.preview} />
+        ) : (
+          <IconFileText className={'fs-1'} />
+        )}
       </a>
       <div className={'w-100 d-flex flex-row align-items-center justify-content-between'}>
         <div>

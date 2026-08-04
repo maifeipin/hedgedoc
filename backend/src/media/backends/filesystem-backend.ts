@@ -10,7 +10,7 @@ import { promises as fs } from 'fs';
 import { posix as pathPosix } from 'path';
 
 import mediaConfiguration, { MediaConfig } from '../../config/media.config';
-import { MediaBackendError } from '../../errors/errors';
+import { MediaBackendError, NotInDBError } from '../../errors/errors';
 import { ConsoleLoggerService } from '../../logger/console-logger.service';
 import { MediaBackend } from '../media-backend.interface';
 import { MediaFileResponse } from '../media-response.interface';
@@ -100,7 +100,22 @@ export class FilesystemBackend implements MediaBackend {
       throw new MediaBackendError('No file extension in backend data');
     }
     const filePath = this.getFilePath(uuid, ext);
-    const buffer = await fs.readFile(filePath);
+    let buffer: Buffer;
+    try {
+      buffer = await fs.readFile(filePath);
+    } catch (e) {
+      // If the file is missing on disk (e.g. an orphaned media record pointing to a file
+      // that was never uploaded to this instance), report it as not found instead of 500.
+      if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+        throw new NotInDBError(
+          `File '${filePath}' was not found`,
+          FilesystemBackend.name,
+          'getFileResponse',
+        );
+      }
+      this.logger.error((e as Error).message, (e as Error).stack, 'getFileResponse');
+      throw new MediaBackendError(`Could not read file '${filePath}'`);
+    }
     const contentType = mime ?? 'application/octet-stream';
     return { buffer, contentType, fileName: `${uuid}.${ext}` };
   }

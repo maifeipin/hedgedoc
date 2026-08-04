@@ -183,6 +183,24 @@ describe('filesystem backend', () => {
       ).rejects.toThrow('No file extension in backend data');
     });
 
+    it('throws a NotInDBError if the file does not exist on disk (ENOENT)', async () => {
+      const error = new Error('no such file or directory') as NodeJS.ErrnoException;
+      error.code = 'ENOENT';
+      jest.spyOn(fs, 'readFile').mockRejectedValue(error);
+
+      await expect(
+        sut.getFileResponse(mockedUuid, JSON.stringify({ ext: 'png', mime: 'image/png' })),
+      ).rejects.toThrow(`File '${mockedUploadPath}/${mockedUuid}.png' was not found`);
+    });
+
+    it('throws a MediaBackendError if the file could not be read for another reason', async () => {
+      jest.spyOn(fs, 'readFile').mockRejectedValue(new Error('mocked error'));
+
+      await expect(
+        sut.getFileResponse(mockedUuid, JSON.stringify({ ext: 'png', mime: 'image/png' })),
+      ).rejects.toThrow(`Could not read file '${mockedUploadPath}/${mockedUuid}.png'`);
+    });
+
     it('throws a MediaBackendError if the extension is not alphanumeric', async () => {
       const readFileSpy = jest.spyOn(fs, 'readFile');
 

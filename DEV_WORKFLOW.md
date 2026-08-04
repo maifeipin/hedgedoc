@@ -136,15 +136,43 @@ http://localhost:8080 {
 
 ## 5. CI/CD（推送到 `develop` 自动触发）
 
-| 工作流 | 作用 |
-| --- | --- |
-| `lint.yml` | oxlint + oxfmt + markdownlint |
-| `test-and-build.yml` | 单测 + 构建 |
-| `e2e-tests.yml` | backend-postgres E2E |
-| `reuse.yml` | SPDX 合规检查 |
-| `docker.yml` | 构建并推送 `ghcr.io/maifeipin/hedgedoc/{backend,frontend>:develop` |
+5 个工作流，**上线前必须全部 success**：
 
-监控：
+| 工作流 | 作用 | 本地等价预检命令（push 前先跑） |
+| --- | --- | --- |
+| `lint.yml` | oxlint 静态检查（0 warning 0 error）+ oxfmt 格式 check | `yarn lint` + `yarn format`（`format:fix` 修复后再跑一次 `format`） |
+| `test-and-build.yml` | turbo 全量构建 + jest 单测（上传 coverage） | `yarn build` + `yarn test` |
+| `e2e-tests.yml` | backend E2E（需 PostgreSQL 16） | `yarn test:e2e`，见下方 **E2E 注意** |
+| `reuse.yml` | SPDX 许可证头合规检查（REUSE 规范） | `docker run --rm -v ${PWD}:/data fsfe/reuse:4.0.3 lint` |
+| `docker.yml` | buildx 构建并推送 `ghcr.io/maifeipin/hedgedoc/{backend,frontend}:develop` | 本地可 `docker build -f backend/docker/Dockerfile .` 验证构建；**推送需 GHCR 凭证**，无法本地模拟 |
+
+> ⚠️ **本地与 CI 环境差异**：
+> - `yarn build` 的脚本用 `sh`，**Windows 本地会失败**（`'sh' is not recognized`）；CI 是 Linux 没问题。Windows 本地以 `yarn lint`（oxlint）+ 单测为准，类型/构建正确性以 CI 为准。
+> - `filesystem-backend.spec.ts` 5 个用例在 Windows 本地必然失败（路径分隔符 `/tmp` ↔ `\tmp`），Linux CI 通过，**不是回归**。
+> - **E2E 慎跑**：本机 `start-dev.ps1` 把 5432 隧道到 vps1 生产库。E2E 会创建独立测试库 `hedgedoc_test_*`（不碰主库），但为了安全建议用独立 postgres 容器：
+>   ```bash
+>   docker run -d --name hd-test-pg -e POSTGRES_PASSWORD=hedgedoc -e POSTGRES_USER=hedgedoc -p 5433:5432 postgres:16
+>   # 然后临时把隧道停掉 / 或改测试连接指向 5433，再跑 yarn test:e2e
+>   ```
+
+**快速预检脚本**（push 前必跑，覆盖 4/5 个 CI，约 1-2 分钟）：
+
+```bash
+fnm exec --using=v24.13.0 -- node .yarn/releases/yarn-4.12.0.cjs lint
+fnm exec --using=v24.13.0 -- node .yarn/releases/yarn-4.12.0.cjs format
+fnm exec --using=v24.13.0 -- node .yarn/releases/yarn-4.12.0.cjs test --filter=@hedgedoc/backend
+```
+
+> 也建议配置 git pre-push hook：push 前自动跑上面的 lint + format + 单测（E2E 因依赖 postgres 可选跳过），避免 push 后 CI 反工。hook 示例：
+> `.git/hooks/pre-push`：
+> ```bash
+> #!/bin/sh
+> fnm exec --using=v24.13.0 -- node .yarn/releases/yarn-4.12.0.cjs lint || exit 1
+> fnm exec --using=v24.13.0 -- node .yarn/releases/yarn-4.12.0.cjs format || exit 1
+> fnm exec --using=v24.13.0 -- node .yarn/releases/yarn-4.12.0.cjs test --filter=@hedgedoc/backend || exit 1
+> ```
+
+监控（push 之后）：
 
 ```bash
 gh run list --limit 5

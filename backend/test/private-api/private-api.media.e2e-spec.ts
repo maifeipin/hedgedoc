@@ -141,6 +141,15 @@ describe('Media', () => {
         expect(downloadResponse.statusCode).toEqual(200);
         expect(downloadResponse.body).toEqual(testImage);
       });
+      it('uploads zip attachment', async () => {
+        const uploadResponse = await agentUser1
+          .post(`${PRIVATE_API_PREFIX}/media`)
+          .attach('file', 'test/private-api/fixtures/test.zip')
+          .set('HedgeDoc-Note', noteAlias1)
+          .expect(201);
+        const zipUuid = uploadResponse.body.uuid;
+        await expect(fs.access(join(uploadPath, zipUuid + '.zip'))).resolves.toBeUndefined();
+      });
     });
 
     describe('fails:', () => {
@@ -153,14 +162,6 @@ describe('Media', () => {
           .attach('file', 'test/private-api/fixtures/test.png')
           .set('HedgeDoc-Note', noteAlias1)
           .expect(401);
-      });
-      it('MIME type not supported', async () => {
-        await agentUser1
-          .post(`${PRIVATE_API_PREFIX}/media`)
-          .attach('file', 'test/private-api/fixtures/test.zip')
-          .set('HedgeDoc-Note', noteAlias1)
-          .expect(400);
-        await expect(fs.access(uploadPath)).rejects.toBeDefined();
       });
       it('note does not exist', async () => {
         await agentUser1

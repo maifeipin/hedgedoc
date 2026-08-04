@@ -24,7 +24,7 @@ import mediaConfigMock from '../config/mock/media.config.mock';
 import { expectBindings } from '../database/mock/expect-bindings';
 import { mockDelete, mockInsert, mockSelect } from '../database/mock/mock-queries';
 import { mockKnexDb } from '../database/mock/provider';
-import { ClientError, NotInDBError } from '../errors/errors';
+import { NotInDBError } from '../errors/errors';
 import { LoggerModule } from '../logger/logger.module';
 import { PermissionService } from '../permissions/permission.service';
 import { dateTimeToDB, getCurrentDateTime } from '../utils/datetime';
@@ -139,14 +139,38 @@ describe('MediaService', () => {
       jest.useRealTimers();
     });
 
-    it('throws ClientError if file type is not detected', async () => {
+    it('allows upload if file type is not detected', async () => {
       jest.spyOn(fileTypeModule, 'fromBuffer').mockResolvedValue(undefined);
-      await expect(service.saveFile(fileName, fileBuffer, userId, noteId)).rejects.toThrow(
-        ClientError,
+      jest.spyOn(uuidModule, 'v7').mockReturnValue(uuid as unknown as Uint8Array);
+      mockInsert(
+        tracker,
+        TableMediaUpload,
+        [
+          FieldNameMediaUpload.backendData,
+          FieldNameMediaUpload.backendType,
+          FieldNameMediaUpload.createdAt,
+          FieldNameMediaUpload.fileName,
+          FieldNameMediaUpload.userId,
+          FieldNameMediaUpload.uuid,
+        ],
+        [{ [FieldNameMediaUpload.uuid]: uuid }],
       );
+      mockInsert(
+        tracker,
+        TableMediaUploadNote,
+        [FieldNameMediaUploadNote.mediaUploadUuid, FieldNameMediaUploadNote.noteId],
+        [{ [FieldNameMediaUploadNote.mediaUploadUuid]: uuid }],
+      );
+      jest.spyOn(service.mediaBackend, 'saveFile').mockResolvedValue('bin');
+      const result = await service.saveFile(fileName, fileBuffer, userId, noteId);
+      expect(result).toBe(uuid);
+      expectBindings(tracker, 'insert', [
+        [expect.any(String), backendType, expect.any(String), fileName, userId, uuid],
+        [uuid, noteId],
+      ]);
     });
 
-    it('throws ClientError if mime type is not allowed', async () => {
+    it('allows upload regardless of mime type', async () => {
       jest.spyOn(fileTypeModule, 'fromBuffer').mockResolvedValue({
         // correct MIME type for Windows exe would be
         // application/vnd.microsoft.portable-executable according to IANA,
@@ -154,9 +178,33 @@ describe('MediaService', () => {
         mime: 'application/x-msdownload',
         ext: 'exe',
       });
-      await expect(service.saveFile(fileName, fileBuffer, userId, noteId)).rejects.toThrow(
-        ClientError,
+      jest.spyOn(uuidModule, 'v7').mockReturnValue(uuid as unknown as Uint8Array);
+      mockInsert(
+        tracker,
+        TableMediaUpload,
+        [
+          FieldNameMediaUpload.backendData,
+          FieldNameMediaUpload.backendType,
+          FieldNameMediaUpload.createdAt,
+          FieldNameMediaUpload.fileName,
+          FieldNameMediaUpload.userId,
+          FieldNameMediaUpload.uuid,
+        ],
+        [{ [FieldNameMediaUpload.uuid]: uuid }],
       );
+      mockInsert(
+        tracker,
+        TableMediaUploadNote,
+        [FieldNameMediaUploadNote.mediaUploadUuid, FieldNameMediaUploadNote.noteId],
+        [{ [FieldNameMediaUploadNote.mediaUploadUuid]: uuid }],
+      );
+      jest.spyOn(service.mediaBackend, 'saveFile').mockResolvedValue('exe');
+      const result = await service.saveFile(fileName, fileBuffer, userId, noteId);
+      expect(result).toBe(uuid);
+      expectBindings(tracker, 'insert', [
+        [expect.any(String), backendType, expect.any(String), fileName, userId, uuid],
+        [uuid, noteId],
+      ]);
     });
   });
 

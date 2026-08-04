@@ -20,12 +20,14 @@ describe('Media', () => {
   let agent: request.SuperAgentTest;
 
   let testImage: Buffer;
+  let testZip: Buffer;
   let uploadPath: string;
 
   beforeEach(async () => {
     testSetup = await TestSetupBuilder.create().withUsers().build();
 
     testImage = await fs.readFile('test/public-api/fixtures/test.png');
+    testZip = await fs.readFile('test/public-api/fixtures/test.zip');
     uploadPath = testSetup.configService.get('mediaConfig').backend.filesystem.uploadPath;
 
     await testSetup.init();
@@ -72,14 +74,17 @@ describe('Media', () => {
       beforeEach(async () => {
         await ensureDeleted(uploadPath);
       });
-      it('MIME type not supported', async () => {
-        await agent
+      it('uploads zip attachment', async () => {
+        const uploadResponse = await agent
           .post(`${PUBLIC_API_PREFIX}/media`)
           .set('Authorization', `Bearer ${testSetup.authTokens[0].secret}`)
           .attach('file', 'test/public-api/fixtures/test.zip')
           .set('HedgeDoc-Note', noteAlias1)
-          .expect(400);
-        await expect(fs.access(uploadPath)).rejects.toBeDefined();
+          .expect('Content-Type', /json/)
+          .expect(201);
+        const uuid = uploadResponse.body.uuid;
+        const file = await fs.readFile(join(uploadPath, uuid + '.zip'));
+        expect(file).toEqual(testZip);
       });
       it('note does not exist', async () => {
         await agent

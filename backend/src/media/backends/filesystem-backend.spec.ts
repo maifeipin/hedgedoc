@@ -126,6 +126,15 @@ describe('filesystem backend', () => {
         `Could not delete file '${mockedUploadPath}/${mockedUuid}.png'`,
       );
     });
+
+    it('does not throw if the file is already deleted (ENOENT)', async () => {
+      const error = new Error('no such file or directory') as NodeJS.ErrnoException;
+      error.code = 'ENOENT';
+      const unlinkSpy = jest.spyOn(fs, 'unlink').mockRejectedValue(error);
+
+      await expect(sut.deleteFile(mockedUuid, JSON.stringify({ ext: 'png' }))).resolves.toBeUndefined();
+      expect(unlinkSpy).toHaveBeenCalledWith(`${mockedUploadPath}/${mockedUuid}.png`);
+    });
   });
 
   describe('getFileUrl', () => {

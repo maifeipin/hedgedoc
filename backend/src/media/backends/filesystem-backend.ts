@@ -65,6 +65,12 @@ export class FilesystemBackend implements MediaBackend {
     try {
       return await fs.unlink(filePath);
     } catch (e) {
+      // If the file does not exist (e.g. an orphaned media record pointing to a file
+      // that was never uploaded to this instance), deletion is effectively a no-op.
+      if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+        this.logger.warn(`File '${filePath}' is already deleted`, 'deleteFile');
+        return;
+      }
       this.logger.error((e as Error).message, (e as Error).stack, 'deleteFile');
       throw new MediaBackendError(`Could not delete file '${filePath}'`);
     }

@@ -32,6 +32,7 @@ describe('filesystem backend', () => {
     setContext: jest.fn(),
     error: jest.fn(),
     debug: jest.fn(),
+    warn: jest.fn(),
   });
 
   function mockMediaConfig(): MediaConfig {
@@ -132,7 +133,9 @@ describe('filesystem backend', () => {
       error.code = 'ENOENT';
       const unlinkSpy = jest.spyOn(fs, 'unlink').mockRejectedValue(error);
 
-      await expect(sut.deleteFile(mockedUuid, JSON.stringify({ ext: 'png' }))).resolves.toBeUndefined();
+      await expect(
+        sut.deleteFile(mockedUuid, JSON.stringify({ ext: 'png' })),
+      ).resolves.toBeUndefined();
       expect(unlinkSpy).toHaveBeenCalledWith(`${mockedUploadPath}/${mockedUuid}.png`);
     });
   });

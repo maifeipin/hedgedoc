@@ -79,12 +79,8 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
           // 用保存的展开状态
           setExpanded(savedExpand)
         } else {
-          // 首次使用：默认只展开根级第一层，不递归全部展开
-          const initialExpand: Record<number, boolean> = {}
-          data.forEach((n: FolderNode) => {
-            initialExpand[n.id] = true
-          })
-          setExpanded(initialExpand)
+          // 首次使用：默认全部折叠
+          setExpanded({})
         }
 
         // 如果有 selectedFolderId，自动展开其父节点路径

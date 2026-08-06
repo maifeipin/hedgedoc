@@ -22,13 +22,9 @@ export const AliasTestCases = [
  */
 export async function ensureDeleted(path: string): Promise<void> {
   try {
-    await fs.rm(path, { recursive: true });
-  } catch (e) {
-    if (e.code && e.code == 'ENOENT') {
-      // ignore error, path is already deleted
-      return;
-    }
-    throw e;
+    await fs.rm(path, { recursive: true, force: true });
+  } catch {
+    // ignore all errors - best effort cleanup for test isolation
   }
 }
 

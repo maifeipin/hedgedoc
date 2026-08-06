@@ -35,6 +35,20 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
   const [expanded, setExpanded] = useState<Record<number, boolean>>({})
   const [loading, setLoading] = useState<boolean>(true)
 
+  const STORAGE_KEY = 'hedgedoc:folder-tree-expanded'
+
+  // 递归查找节点路径（返回从根到目标的所有父节点 ID）
+  const findPath = (nodes: FolderNode[], targetId: number, path: number[] = []): number[] | null => {
+    for (const node of nodes) {
+      if (node.id === targetId) return [...path, node.id]
+      if (node.children) {
+        const result = findPath(node.children, targetId, [...path, node.id])
+        if (result) return result
+      }
+    }
+    return null
+  }
+
   // Modal / Form state
   const [showAddForm, setShowAddForm] = useState<boolean>(false)
   const [newFolderName, setNewFolderName] = useState<string>('')
@@ -52,15 +66,39 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
       if (res.ok) {
         const data = await res.json()
         setTreeData(data)
-        const initialExpand: Record<number, boolean> = {}
-        const buildExpand = (nodes: FolderNode[]) => {
-          nodes.forEach((n) => {
+
+        // 从 localStorage 读取上次保存的展开状态
+        let savedExpand: Record<number, boolean> = {}
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY)
+          if (saved) savedExpand = JSON.parse(saved)
+        } catch {}
+
+        if (Object.keys(savedExpand).length > 0) {
+          // 用保存的展开状态
+          setExpanded(savedExpand)
+        } else {
+          // 首次使用：默认只展开根级第一层，不递归全部展开
+          const initialExpand: Record<number, boolean> = {}
+          data.forEach((n: FolderNode) => {
             initialExpand[n.id] = true
-            if (n.children) buildExpand(n.children)
           })
+          setExpanded(initialExpand)
         }
-        buildExpand(data)
-        setExpanded(initialExpand)
+
+        // 如果有 selectedFolderId，自动展开其父节点路径
+        if (selectedFolderId) {
+          const path = findPath(data, selectedFolderId)
+          if (path) {
+            setExpanded((prev) => {
+              const updated = { ...prev }
+              path.forEach((id) => {
+                updated[id] = true
+              })
+              return updated
+            })
+          }
+        }
       }
     } catch (e) {
       console.error('Failed to load folder tree', e)
@@ -71,7 +109,13 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
 
   const toggleExpand = (id: number, e: React.MouseEvent) => {
     e.stopPropagation()
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }))
+    setExpanded((prev) => {
+      const updated = { ...prev, [id]: !prev[id] }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
   }
 
   const handleSelect = (folderId: number) => {

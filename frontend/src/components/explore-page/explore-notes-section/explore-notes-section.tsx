@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import React, { Fragment, useEffect, useRef } from 'react'
+import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { Mode } from '../mode-selection/mode'
 import type { NoteType } from '@hedgedoc/commons'
 import { FilterByNoteType } from './filters/filter-by-note-type'
@@ -14,10 +14,16 @@ import { SortButton } from './filters/sort-button'
 import { NotesList } from './notes-list/notes-list'
 import { SortMode } from '@hedgedoc/commons'
 import { ModeSelection } from '../mode-selection/mode-selection'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import styles from './explore-notes-section.module.css'
 
 export interface ExploreNotesSectionProps {
   mode: Mode
+}
+
+interface FolderPathItem {
+  id: number
+  name: string
 }
 
 /**
@@ -35,6 +41,45 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
   const [folderIdString, setFolderIdString] = useUrlParamState<string | null>('folderId', null)
   const [tagFilter, setTagFilter] = useUrlParamState<string | null>('tag', null)
   const previousMode = useRef<Mode>(mode)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const [folderPath, setFolderPath] = useState<FolderPathItem[]>([])
+
+  // 获取当前选中文件夹的路径面包屑
+  useEffect(() => {
+    if (!folderIdString) {
+      setFolderPath([])
+      return
+    }
+    let cancelled = false
+    fetch('/api/v2/folders/tree')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (cancelled) return
+        const targetId = parseInt(folderIdString, 10)
+        const path: FolderPathItem[] = []
+        const find = (nodes: any[]): boolean => {
+          for (const node of nodes) {
+            if (node.id === targetId) {
+              path.push({ id: node.id, name: node.name })
+              return true
+            }
+            if (node.children && find(node.children)) {
+              path.unshift({ id: node.id, name: node.name })
+              return true
+            }
+          }
+          return false
+        }
+        find(data)
+        setFolderPath(path)
+      })
+      .catch(() => setFolderPath([]))
+    return () => {
+      cancelled = true
+    }
+  }, [folderIdString])
 
   // Reset filters when mode/page changes
   useEffect(() => {
@@ -48,6 +93,17 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
     }
   }, [mode, setFilterByType, setSearchFilter, setSortMode, setFolderIdString, setTagFilter])
 
+  const navigateToFolder = (folderId: number | null) => {
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    if (folderId !== null) {
+      params.set('folderId', folderId.toString())
+    } else {
+      params.delete('folderId')
+    }
+    const queryString = params.toString()
+    router.push(queryString ? `${pathname}?${queryString}` : pathname || '')
+  }
+
   return (
     <Fragment>
       <div className={styles['filter-and-nav-box']}>
@@ -58,6 +114,28 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
           <SortButton selected={sortMode} onChange={setSortMode} showLastVisitedOptions={mode === Mode.VISITED} />
         </search>
       </div>
+      {folderPath.length > 0 && (
+        <div className={styles['breadcrumb-bar']}>
+          <a onClick={() => navigateToFolder(null)}>全部笔记</a>
+          {folderPath.map((item, index) => (
+            <Fragment key={item.id}>
+              <span className={styles['breadcrumb-separator']}>/</span>
+              {index === folderPath.length - 1 ? (
+                <span className={styles['breadcrumb-current']}>{item.name}</span>
+              ) : (
+                <a onClick={() => navigateToFolder(item.id)}>{item.name}</a>
+              )}
+            </Fragment>
+          ))}
+          <button
+            type='button'
+            className={styles['breadcrumb-clear']}
+            onClick={() => navigateToFolder(null)}
+            title='清除目录筛选'>
+            ✕
+          </button>
+        </div>
+      )}
       <NotesList
         mode={mode}
         sort={sortMode}

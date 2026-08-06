@@ -40,8 +40,24 @@ export const Welcome: React.FC = () => {
   }, [])
 
   const handleCreateNewNote = useCallback(() => {
+    const params = new URLSearchParams(window.location.search)
+    const folderId = params.get('folderId')
     createNote('')
-      .then((note) => {
+      .then(async (note) => {
+        if (folderId) {
+          try {
+            await fetch('/api/v2/folders/move-note', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                noteId: note.metadata.primaryAlias,
+                folderId: parseInt(folderId, 10)
+              })
+            })
+          } catch {
+            // 移动失败不阻塞，笔记已创建
+          }
+        }
         router?.push(`/n/${note.metadata.primaryAlias}`)
       })
       .catch((err: Error) => {

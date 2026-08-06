@@ -1,17 +1,17 @@
 /*
  * SPDX-FileCopyrightText: 2026 The HedgeDoc developers (see AUTHORS file)
+ *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
 .treeContainer {
   display: flex;
   flex-direction: column;
-  background-color: #0f172a;
-  color: #e2e8f0;
+  background-color: transparent;
+  color: var(--bs-body-color);
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid #1e293b;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--bs-border-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
 
@@ -26,12 +26,12 @@
   justify-content: space-between;
   padding-bottom: 8px;
   margin-bottom: 8px;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid var(--bs-border-color);
 
   .title {
     font-size: 12px;
     font-weight: 600;
-    color: #f1f5f9;
+    color: var(--bs-body-color);
     letter-spacing: 0.02em;
     display: flex;
     align-items: center;
@@ -43,7 +43,7 @@
   }
 
   .title:hover {
-    color: #60a5fa;
+    color: #4f46e5;
   }
 
   .headerActions {
@@ -61,16 +61,15 @@
   font-size: 11px;
   font-weight: 500;
   border-radius: 6px;
-  background-color: rgba(37, 99, 235, 0.2);
-  color: #60a5fa;
+  background-color: rgba(37, 99, 235, 0.15);
+  color: #4f46e5;
   border: 1px solid rgba(59, 130, 246, 0.4);
   cursor: pointer;
   transition: all 0.15s ease;
   line-height: 1;
 
   &:hover {
-    background-color: rgba(37, 99, 235, 0.35);
-    color: #93c5fd;
+    background-color: rgba(37, 99, 235, 0.25);
     border-color: rgba(59, 130, 246, 0.6);
   }
 }
@@ -83,16 +82,15 @@
   font-size: 11px;
   font-weight: 500;
   border-radius: 6px;
-  background-color: rgba(16, 185, 129, 0.2);
-  color: #34d399;
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #059669;
   border: 1px solid rgba(16, 185, 129, 0.4);
   cursor: pointer;
   transition: all 0.15s ease;
   line-height: 1;
 
   &:hover {
-    background-color: rgba(16, 185, 129, 0.35);
-    color: #6ee7b7;
+    background-color: rgba(16, 185, 129, 0.25);
   }
 }
 
@@ -116,7 +114,7 @@
     border-color 0.15s ease;
 
   &:hover {
-    background-color: rgba(30, 41, 59, 0.8);
+    background-color: var(--bs-tertiary-bg);
 
     .hoverActions {
       opacity: 1;
@@ -125,17 +123,17 @@
   }
 
   &.selected {
-    background-color: rgba(37, 99, 235, 0.25);
+    background-color: rgba(37, 99, 235, 0.15);
     border: 1px solid rgba(59, 130, 246, 0.4);
 
     .nodeText {
-      color: #93c5fd;
+      color: #4f46e5;
       font-weight: 500;
     }
   }
 
   &.dragOver {
-    background-color: rgba(37, 99, 235, 0.3);
+    background-color: rgba(37, 99, 235, 0.2);
     outline: 1px dashed #3b82f6;
   }
 }
@@ -157,11 +155,11 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #94a3b8;
+  color: var(--bs-secondary-color);
   cursor: pointer;
 
   &:hover {
-    color: #f8fafc;
+    color: var(--bs-body-color);
   }
 
   &.hidden {
@@ -177,18 +175,18 @@
   flex-shrink: 0;
 
   &.system {
-    color: #60a5fa;
+    color: #3b82f6;
   }
 
   &.folder {
-    color: #fbbf24;
+    color: #eab308;
   }
 }
 
 .nodeText {
   font-size: 12px;
   line-height: 1.2;
-  color: #e2e8f0;
+  color: var(--bs-body-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -198,9 +196,9 @@
   font-size: 10px;
   padding: 1px 6px;
   border-radius: 10px;
-  background-color: #1e293b;
-  color: #94a3b8;
-  border: 1px solid #334155;
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-secondary-color);
+  border: 1px solid var(--bs-border-color);
   margin-left: 4px;
   flex-shrink: 0;
 }
@@ -222,7 +220,7 @@
     border: 0;
     cursor: pointer;
     background-color: rgba(59, 130, 246, 0.15);
-    color: #60a5fa;
+    color: #3b82f6;
 
     &:hover {
       background-color: rgba(59, 130, 246, 0.3);
@@ -236,7 +234,7 @@
     border: 0;
     cursor: pointer;
     background-color: rgba(239, 68, 68, 0.15);
-    color: #f87171;
+    color: #dc2626;
 
     &:hover {
       background-color: rgba(239, 68, 68, 0.3);
@@ -247,7 +245,7 @@
 .treeChildren {
   margin-left: 12px;
   padding-left: 10px;
-  border-left: 1px solid rgba(51, 65, 85, 0.5);
+  border-left: 1px solid var(--bs-border-color);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -258,8 +256,8 @@
 .formDrawer {
   margin: 6px 0;
   padding: 10px;
-  background-color: #1e293b;
-  border: 1px solid #334155;
+  background-color: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -268,12 +266,12 @@
   .formTitle {
     font-size: 12px;
     font-weight: 600;
-    color: #f1f5f9;
+    color: var(--bs-body-color);
   }
 
   .formLabel {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--bs-secondary-color);
     margin-bottom: 4px;
     display: block;
   }
@@ -284,9 +282,9 @@
     padding: 6px 8px;
     font-size: 12px;
     border-radius: 6px;
-    background-color: #0f172a;
-    color: #f1f5f9;
-    border: 1px solid #334155;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
     outline: none;
 
     &:focus {

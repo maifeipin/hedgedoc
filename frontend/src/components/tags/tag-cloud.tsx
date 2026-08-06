@@ -1,4 +1,4 @@
-/*
+﻿/*
  * SPDX-FileCopyrightText: 2026 The HedgeDoc developers (see AUTHORS file)
  *
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -108,10 +108,10 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
           isSelected
             ? 'bg-primary text-white shadow-sm ring-2 ring-primary ring-offset-1 font-medium'
             : tag.isSystem
-              ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 hover:bg-indigo-100'
+              ? 'bg-info-subtle text-info-emphasis border border-info-subtle hover:bg-info'
               : tag.count === 0
-                ? 'bg-slate-50 dark:bg-neutral-800/50 text-slate-400 dark:text-neutral-500 border border-slate-200/50 dark:border-neutral-700/50 hover:bg-slate-100 hover:text-slate-600'
-                : 'bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 border border-slate-200/80 dark:border-neutral-700 hover:bg-slate-200'
+                ? 'bg-body-secondary text-body-secondary border border-body-tertiary hover:bg-body-tertiary'
+                : 'bg-body-tertiary text-body border border-body-tertiary hover:bg-body-secondary'
         }`}>
         #{tag.name} {tag.count > 0 && <span className='opacity-75 ms-0.5 text-[10px]'>({tag.count})</span>}
       </button>
@@ -119,9 +119,9 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
   }
 
   return (
-    <div className='p-3.5 bg-slate-900/90 text-slate-200 rounded-xl border border-slate-800 shadow-sm flex flex-col gap-2.5'>
-      <div className='flex items-center justify-between pb-2 border-b border-slate-800/80 px-1 gap-2'>
-        <div className='font-semibold text-slate-200 text-xs tracking-wide flex items-center gap-1.5'>
+    <div className='p-3.5 bg-body-tertiary text-body rounded-xl border flex flex-col gap-2.5'>
+      <div className='flex items-center justify-between pb-2 border-bottom px-1 gap-2'>
+        <div className='font-semibold text-body-secondary text-xs tracking-wide flex items-center gap-1.5'>
           <span>🏷️ 标签分类</span>
         </div>
         <button
@@ -148,7 +148,7 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
       )}
 
       {tags.length === 0 ? (
-        <span className='text-xs text-slate-400 p-1'>暂无标签</span>
+        <span className='text-xs text-body-secondary p-1'>暂无标签</span>
       ) : (
         <div className='flex flex-col gap-2.5 max-h-56 overflow-y-auto pe-1'>
           {/* Preset / System Tags Group */}
@@ -157,7 +157,7 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
               <button
                 type='button'
                 onClick={() => setPresetOpen(!presetOpen)}
-                className='w-full flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-neutral-400 mb-1.5 p-0 bg-transparent border-0 text-start cursor-pointer hover:text-slate-700'>
+                className='w-full flex items-center justify-between text-[11px] font-semibold text-body-secondary mb-1.5 p-0 bg-transparent border-0 text-start cursor-pointer hover:text-body'>
                 <span>📌 常用预设标签 ({systemTags.length})</span>
                 <span className='text-[10px]'>{presetOpen ? '▼' : '▶'}</span>
               </button>
@@ -167,11 +167,11 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
 
           {/* Active Extracted Tags Group */}
           {activeTags.length > 0 && (
-            <div className={systemTags.length > 0 ? 'pt-1 border-t border-slate-200/60 dark:border-neutral-800' : ''}>
+            <div className={systemTags.length > 0 ? 'pt-1 border-top' : ''}>
               <button
                 type='button'
                 onClick={() => setActiveOpen(!activeOpen)}
-                className='w-full flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-neutral-400 mb-1.5 p-0 bg-transparent border-0 text-start cursor-pointer hover:text-slate-700'>
+                className='w-full flex items-center justify-between text-[11px] font-semibold text-body-secondary mb-1.5 p-0 bg-transparent border-0 text-start cursor-pointer hover:text-body'>
                 <span>🏷️ 使用中的标签 ({activeTags.length})</span>
                 <span className='text-[10px]'>{activeOpen ? '▼' : '▶'}</span>
               </button>
@@ -181,16 +181,11 @@ export const TagCloud: React.FC<TagCloudProps> = ({ onSelectTag }) => {
 
           {/* Unused Custom Tags Group */}
           {unusedTags.length > 0 && (
-            <div
-              className={
-                systemTags.length > 0 || activeTags.length > 0
-                  ? 'pt-1 border-t border-slate-200/60 dark:border-neutral-800'
-                  : ''
-              }>
+            <div className={systemTags.length > 0 || activeTags.length > 0 ? 'pt-1 border-top' : ''}>
               <button
                 type='button'
                 onClick={() => setUnusedOpen(!unusedOpen)}
-                className='w-full flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-neutral-400 mb-1.5 p-0 bg-transparent border-0 text-start cursor-pointer hover:text-slate-700'>
+                className='w-full flex items-center justify-between text-[11px] font-semibold text-body-secondary mb-1.5 p-0 bg-transparent border-0 text-start cursor-pointer hover:text-body'>
                 <span>📝 手动保存的标签 ({unusedTags.length})</span>
                 <span className='text-[10px]'>{unusedOpen ? '▼' : '▶'}</span>
               </button>

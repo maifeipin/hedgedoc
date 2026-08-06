@@ -101,14 +101,14 @@ export default function ExploreLayout({ children }: ExploreLayoutProps) {
           {/* Left Sidebar Panel */}
           {!isCollapsed && (
             <div
-              className='d-flex flex-column flex-shrink-0 bg-slate-900/60 dark:bg-neutral-900/80 backdrop-blur-md rounded-2xl p-2.5 me-3 border border-slate-800/80 shadow-md position-relative'
+              className='d-flex flex-column flex-shrink-0 bg-body-tertiary border rounded-2xl p-2.5 me-3 shadow-sm position-relative'
               style={{
                 width: `${sidebarWidth}px`,
                 height: 'calc(100vh - 180px)',
                 transition: isDragging ? 'none' : 'width 0.15s ease'
               }}>
-              <div className='d-flex justify-content-between align-items-center mb-2.5 pb-2 border-bottom border-slate-800/80 px-2'>
-                <span className='fw-semibold text-slate-200 text-xs m-0 d-flex align-items-center gap-1.5 tracking-wide'>
+              <div className='d-flex justify-content-between align-items-center mb-2.5 pb-2 border-bottom px-2'>
+                <span className='fw-semibold text-body-secondary text-xs m-0 d-flex align-items-center gap-1.5 tracking-wide'>
                   <span>📖 侧边工作台</span>
                 </span>
                 <button

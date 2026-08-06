@@ -35,6 +35,20 @@
   text-decoration: underline;
 }
 
+.breadcrumb-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #4f46e5;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
 .breadcrumb-separator {
   color: #cbd5e1;
   font-size: 0.7rem;

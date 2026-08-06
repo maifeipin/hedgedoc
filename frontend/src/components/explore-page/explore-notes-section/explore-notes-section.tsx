@@ -116,14 +116,30 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
       </div>
       {folderPath.length > 0 && (
         <div className={styles['breadcrumb-bar']}>
-          <a onClick={() => navigateToFolder(null)}>全部笔记</a>
+          <button
+            type='button'
+            className={styles['breadcrumb-link']}
+            onClick={() => navigateToFolder(null)}
+            onKeyDown={(e) => { if (e.key === 'Enter') navigateToFolder(null) }}
+            role='link'
+            tabIndex={0}>
+            全部笔记
+          </button>
           {folderPath.map((item, index) => (
             <Fragment key={item.id}>
               <span className={styles['breadcrumb-separator']}>/</span>
               {index === folderPath.length - 1 ? (
                 <span className={styles['breadcrumb-current']}>{item.name}</span>
               ) : (
-                <a onClick={() => navigateToFolder(item.id)}>{item.name}</a>
+                <button
+                  type='button'
+                  className={styles['breadcrumb-link']}
+                  onClick={() => navigateToFolder(item.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') navigateToFolder(item.id) }}
+                  role='link'
+                  tabIndex={0}>
+                  {item.name}
+                </button>
               )}
             </Fragment>
           ))}

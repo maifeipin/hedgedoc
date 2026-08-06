@@ -57,6 +57,7 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
 
   useEffect(() => {
     void fetchTree()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchTree = async () => {

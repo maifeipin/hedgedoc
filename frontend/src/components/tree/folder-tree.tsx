@@ -104,6 +104,17 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     }
   }
 
+  const handleClearSelection = () => {
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    params.delete('folderId')
+    const queryString = params.toString()
+    const safePath = pathname || ''
+    router.push(queryString ? `${safePath}?${queryString}` : safePath)
+    if (onSelectFolder) {
+      onSelectFolder(null)
+    }
+  }
+
   const toggleExpand = (id: number, e: React.MouseEvent) => {
     e.stopPropagation()
     setExpanded((prev) => {
@@ -383,9 +394,9 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     <div className={styles.treeContainer}>
       {/* Header controls */}
       <div className={styles.treeHeader}>
-        <div className={styles.title}>
-          <span>📂 目录与工作台</span>
-        </div>
+        <button type='button' onClick={handleClearSelection} className={styles.title} title='查看全部笔记'>
+          📂 全部笔记
+        </button>
         <div className={styles.headerActions}>
           <button type='button' onClick={() => openAddForm(null)} className={styles.btnPrimary} title='新建顶级根目录'>
             <span>+ 根目录</span>

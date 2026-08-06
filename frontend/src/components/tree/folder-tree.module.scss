@@ -36,6 +36,14 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .title:hover {
+    color: #60a5fa;
   }
 
   .headerActions {

@@ -32,15 +32,22 @@ let folderTreeCache: any[] | null = null
 let folderTreePromise: Promise<any[]> | null = null
 
 function fetchFolderTree(): Promise<any[]> {
-  if (folderTreeCache) return Promise.resolve(folderTreeCache)
+  if (folderTreeCache && folderTreeCache.length > 0) return Promise.resolve(folderTreeCache)
   if (folderTreePromise) return folderTreePromise
   folderTreePromise = fetch('/api/v2/folders/tree')
-    .then((res) => (res.ok ? res.json() : []))
+    .then((res) => {
+      if (!res.ok) throw new Error(`folders/tree ${res.status}`)
+      return res.json()
+    })
     .then((data) => {
       folderTreeCache = data
+      folderTreePromise = null
       return data
     })
-    .catch(() => [] as any[])
+    .catch((e) => {
+      folderTreePromise = null
+      throw e
+    })
   return folderTreePromise
 }
 

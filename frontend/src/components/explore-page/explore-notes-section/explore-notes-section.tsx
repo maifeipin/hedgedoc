@@ -120,9 +120,7 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
             type='button'
             className={styles['breadcrumb-link']}
             onClick={() => navigateToFolder(null)}
-            onKeyDown={(e) => { if (e.key === 'Enter') navigateToFolder(null) }}
-            role='link'
-            tabIndex={0}>
+            onKeyDown={(e) => { if (e.key === 'Enter') navigateToFolder(null) }}>
             全部笔记
           </button>
           {folderPath.map((item, index) => (
@@ -135,9 +133,7 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
                   type='button'
                   className={styles['breadcrumb-link']}
                   onClick={() => navigateToFolder(item.id)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') navigateToFolder(item.id) }}
-                  role='link'
-                  tabIndex={0}>
+                  onKeyDown={(e) => { if (e.key === 'Enter') navigateToFolder(item.id) }}>
                   {item.name}
                 </button>
               )}

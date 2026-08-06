@@ -26,6 +26,24 @@ interface FolderPathItem {
   name: string
 }
 
+// Module-level cache for folder tree data to avoid duplicate /api/v2/folders/tree requests
+// (FolderTree component already fetches this; we reuse the cached result for breadcrumbs)
+let folderTreeCache: any[] | null = null
+let folderTreePromise: Promise<any[]> | null = null
+
+function fetchFolderTree(): Promise<any[]> {
+  if (folderTreeCache) return Promise.resolve(folderTreeCache)
+  if (folderTreePromise) return folderTreePromise
+  folderTreePromise = fetch('/api/v2/folders/tree')
+    .then((res) => (res.ok ? res.json() : []))
+    .then((data) => {
+      folderTreeCache = data
+      return data
+    })
+    .catch(() => [] as any[])
+  return folderTreePromise
+}
+
 /**
  * Renders the section that shows the notes of the explore page.
  *
@@ -53,8 +71,7 @@ export const ExploreNotesSection: React.FC<ExploreNotesSectionProps> = ({ mode }
       return
     }
     let cancelled = false
-    fetch('/api/v2/folders/tree')
-      .then((res) => (res.ok ? res.json() : []))
+    fetchFolderTree()
       .then((data) => {
         if (cancelled) return
         const targetId = parseInt(folderIdString, 10)

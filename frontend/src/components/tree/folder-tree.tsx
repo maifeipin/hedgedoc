@@ -60,13 +60,26 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ onSelectFolder, onImport
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const sortTree = (nodes: FolderNode[]): FolderNode[] => {
+    return nodes
+      .map((n) => ({ ...n, children: n.children ? sortTree(n.children) : undefined }))
+      .sort((a, b) => {
+        // System folders (Inbox) always first
+        if (a.isSystem && !b.isSystem) return -1
+        if (!a.isSystem && b.isSystem) return 1
+        // Sort: numbers (01, 02...) -> letters (a-z) -> Chinese
+        return a.name.localeCompare(b.name, 'zh-CN', { numeric: true, sensitivity: 'base' })
+      })
+  }
+
   const fetchTree = async () => {
     try {
       setLoading(true)
       const res = await fetch('/api/v2/folders/tree')
       if (res.ok) {
         const data = await res.json()
-        setTreeData(data)
+        const sorted = sortTree(data)
+        setTreeData(sorted)
 
         // 从 localStorage 读取上次保存的展开状态
         let savedExpand: Record<number, boolean> = {}
